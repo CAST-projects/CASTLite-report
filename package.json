@@ -1,0 +1,10 @@
+{
+    "name": "ReportMaker",
+    "version": "1.0.0",
+    "description": "CAST Lite report marker based on JSON output",
+    "license": "MIT",
+    "repository": "https://github.com/CAST-projects/CASTLite-report",
+    "dependencies": {
+        "pdfjs": "~2.3"
+    }
+}
