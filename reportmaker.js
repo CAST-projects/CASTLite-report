@@ -51,12 +51,25 @@ else {
   displayhelp();
 }
 
+var template;
+
+try {
+  template = require(/*path.join(*/'./'+report+'.template.js');
+}
+catch(error) {
+  console.log("Cannot load the template from report:"+report);
+  console.error(error);
+  process.exit(1);
+}
+
+console.log(template.templatetitle);
+
 function displayhelp() {
 
   console.log("Report Maker Help");
   console.log("--input: path to the folder where to find the CAST Lite output");
   console.log("--output: path where the report will be saved");
-  console.log("--report: OWASP2017|OWASP2013 (CAST Health Factors if empty)");
+  console.log("--report: OWASP2017|OWASP2013|CWETop252011|CWETop252019 (CAST Health Factors if empty)");
   console.log("--format: PDF|HTML (PDF by default)");
 
   process.exit(1);
@@ -467,31 +480,8 @@ var doc;
 setupDocument();
 
 // generate the output based on the report
-if(report=="OWASP2017") {
-  generateSecurityReport('OWASP 2017 Summary Report',[
-        {"id":"A1-2017","name":"A1 2017 - Injection","nbviolation":"0","applicable":"1"},
-        {"id":"A2-2017","name":"A2 2017 - Broken Authentication","nbviolation":"0","applicable":"1"},
-        {"id":"A3-2017","name":"A3 2017 - Sensitive Data Exposure","nbviolation":"0","applicable":"1"},
-        {"id":"A4-2017","name":"A4 2017 - XML External Entities (XXE)","nbviolation":"0","applicable":"1"},
-        {"id":"A5-2017","name":"A5 2017 - Broken Access Control","nbviolation":"0","applicable":"1"},
-        {"id":"A6-2017","name":"A6 2017 - Security Misconfiguration","nbviolation":"0","applicable":"1"},
-        {"id":"A7-2017","name":"A7 2017 - Cross-Site Scripting (XSS)","nbviolation":"0","applicable":"1"},
-        {"id":"A8-2017","name":"A8 2017 - Insecure Deserialization","nbviolation":"0","applicable":"1"},
-        {"id":"A9-2017","name":"A9 2017 - Using Components With Known Vulnerabilities","nbviolation":"0","applicable":"1"},
-        {"id":"A10-2017","name":"A10 2017 - Insufficient Logging & Monitoring","nbviolation":"0","applicable":"0"}]);
-}
-else if(report=="OWASP2013") {
-  generateSecurityReport('OWASP 2013 Summary Report',[
-        {"id":"A1-2013","name":"A1 2013 - Injection","nbviolation":"0","applicable":"1"},
-        {"id":"A2-2013","name":"A2 2013 - Broken Authentication and Session Management","nbviolation":"0","applicable":"1"},
-        {"id":"A3-2013","name":"A3 2013 - Cross-Site Scripting (XSS)","nbviolation":"0","applicable":"1"},
-        {"id":"A4-2013","name":"A4 2013 - Insecure Direct Object References","nbviolation":"0","applicable":"1"},
-        {"id":"A5-2013","name":"A5 2013 - Security Misconfiguration","nbviolation":"0","applicable":"1"},
-        {"id":"A6-2013","name":"A6 2013 - Sensitive Data Exposure","nbviolation":"0","applicable":"1"},
-        {"id":"A7-2013","name":"A7 2013 - Missing Function Level Access Control","nbviolation":"0","applicable":"1"},
-        {"id":"A8-2013","name":"A8 2013 - Cross-Site Request Forgery (CSRF)","nbviolation":"0","applicable":"1"},
-        {"id":"A9-2013","name":"A9 2013 - Using Components With Known Vulnerabilities","nbviolation":"0","applicable":"1"},
-        {"id":"A10-2013","name":"A10 2013 - Unvalidated Redirects and Forwards","nbviolation":"0","applicable":"1"}]);
+if(report!="") {
+  generateSecurityReport(template.templatetitle,template.templatetags);
 }
 else {
   generateBasicReport();
