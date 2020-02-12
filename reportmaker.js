@@ -23,7 +23,7 @@ if ( myArgs.length > 0) {
 
       input = path.normalize(input);
 
-      console.log("intput="+input);
+      //console.log("intput="+input);
     }
 
     if ( myArgs[i] == '--output' ) {
@@ -31,19 +31,19 @@ if ( myArgs.length > 0) {
 
       output = path.normalize(output);
 
-      console.log("output="+output);
+      //console.log("output="+output);
     }
 
     if ( myArgs[i] == '--format' ) {
       format = myArgs[i+1];
 
-      console.log("format="+format);
+      //console.log("format="+format);
     }
 
     if ( myArgs[i] == '--report' ) {
       report = myArgs[i+1];
 
-      console.log("report="+report);
+      //console.log("report="+report);
     }
   }
 }
@@ -69,7 +69,7 @@ function displayhelp() {
   console.log("Report Maker Help");
   console.log("--input: path to the folder where to find the CAST Lite output");
   console.log("--output: path where the report will be saved");
-  console.log("--report: OWASP2017|OWASP2013|CWETop252011|CWETop252019 (CAST Health Factors if empty)");
+  console.log("--report: OWASP2017|OWASP2013|CWETop252011|CWETop252019|OWASPMobile2016 (CAST Health Factors if empty)");
   console.log("--format: PDF|HTML (PDF by default)");
 
   process.exit(1);
@@ -94,14 +94,16 @@ catch(error) {
 
 const stylecss = " \
 body { height:100%; font-family: sans-serif, Arial; } \
-h1,h2,h3,h4,h5,h6 {margin: 0px;} \
+h1,h2,h3,h4,h5,h6 {margin-top: 20px; margin-bottom: 6px;} \
+.nofindings { color: #909090; } \
+table { width: 100%; } \
 table, th, td { \
-  border: 1px solid black; }\
+  border: 1px solid black; border-collapse: collapse; padding: 4px; align:left; }\
 tbody tr:nth-child(even) { \
   background-color: #f5f5f5; } \
 tbody tr { \
     font-size: 14px; \
-    color: #808080; \
+    color: #101010; \
     line-height: 1.2; \
     font-weight: unset; \
 }";
@@ -133,7 +135,7 @@ const h4 = { fontSize: 12, font: fonts.HelveticaBold };
 const paragraphFormat = {fontSize: 11, color: "#AAAAAA"};
 
 
-function generateSecurityReport(reporttitle, categoriesObjects) {
+function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions) {
 
   const isHTML = (format == 'HTML');
 
@@ -142,21 +144,37 @@ function generateSecurityReport(reporttitle, categoriesObjects) {
   if(isHTML) {
     doc.write('<h3>CAST Security Report</h3>');
     doc.write('<h4>'+reporttitle+'</h4>');
+    doc.write('<table><tr>');
 
-    doc.write('<table><tr><th>Category Name</th><th># Violations</th></tr>');
+    headers.forEach((item, i) => {
+      doc.write('<th>'+item+'</th>');
+    });
+
+    doc.write('</tr>');
   }
   else {
     doc.cell(paddingBottomOptions).text('CAST Security Report',h3);
     doc.cell(paddingBottomOptions).text(reporttitle,h4);
 
+    var widths = [null];
+    for(c=1; c<headers.length-1; c++) {
+      widths.push(70);
+    }
+    widths.push(60);
+
     var table = doc.table({
-          widths: [null, 200],
+          widths: widths,
           borderHorizontalWidths: function(i) { return i < 2 ? 1 : 0.1 },
           padding: 5})
 
-    var tr = table.header({ font: fonts.HelveticaBold, borderBottomWidth: 1.5 })
-    tr.cell('Category Name')
-    tr.cell('# Violations', { textAlign: 'right' })
+    var tr = table.header({ font: fonts.HelveticaBold, fontSize: 9, borderBottomWidth: 1.5 })
+
+    //tr.cell('Category Name')
+    headers.forEach((item, i) => {
+      //console.log(item);
+      tr.cell(item);
+    });
+    //tr.cell('# Violations', { textAlign: 'right' })
   }
 
   // prepare key-value mapping by reviewing all categories
@@ -177,24 +195,74 @@ function generateSecurityReport(reporttitle, categoriesObjects) {
   // overall table view of violations per security category
   Object.keys(categoriesObjects).forEach(k => {
 
+    var customs;
+    try{
+      customs = categoriesObjects[k]["custom"];
+    }
+    catch(error) {
+      // no custom but this is not mandatory
+    }
+
     if(isHTML) {
       if(categoriesObjects[k]["applicable"]=="1") {
         doc.write('<tr><td>'+categoriesObjects[k].name+'</td>');
-        doc.write('<td align="right">'+categoriesObjects[k].nbviolation.toString()+'</td></tr>');
+
+        if(customs)
+        {
+          var allKeys = Object.keys(customs);
+          for(p=0;p<allKeys.length; p++)
+          {
+            var block = customs[allKeys[p]];
+            doc.write('<td bgColor="'+block["backgroundColor"]+'">'+block["title"]+'</td>')
+          }
+        }
+
+        doc.write('<td with="80" align="right">'+categoriesObjects[k].nbviolation.toString()+'</td></tr>');
       }
       else {
         doc.write('<tr><td class="nofindings">'+categoriesObjects[k].name+'</td>');
-        doc.write('<td align="right">N/A</td></tr>');
+        if(customs)
+        {
+          var allKeys = Object.keys(customs);
+          for(p=0;p<allKeys.length; p++)
+          {
+            var block = customs[allKeys[p]];
+            doc.write('<td bgColor="'+block["backgroundColor"]+'">'+block["title"]+'</td>')
+          }
+        }
+        doc.write('<td with="80" align="right">N/A</td></tr>');
       }
     }
     else {
       var row = table.row()
       if(categoriesObjects[k]["applicable"]=="1") {
         row.cell(categoriesObjects[k].name);
+
+        if(customs)
+        {
+          var allKeys = Object.keys(customs);
+          for(p=0;p<allKeys.length; p++)
+          {
+            var block = customs[allKeys[p]];
+            row.cell(block["title"],{'backgroundColor':block["backgroundColor"]});
+          }
+        }
+
         row.cell(categoriesObjects[k].nbviolation.toString(),{textAlign:'right'});
       }
       else {
         row.cell(categoriesObjects[k].name,{color: "#CCCCCC"});
+
+        if(customs)
+        {
+          var allKeys = Object.keys(customs);
+          for(p=0;p<allKeys.length; p++)
+          {
+            var block = customs[allKeys[p]];
+            row.cell(block["title"],{'backgroundColor':block["backgroundColor"]});
+          }
+        }
+
         row.cell("N/A",{textAlign:'right',color: "#CCCCCC"});
       }
     }
@@ -213,6 +281,16 @@ function generateSecurityReport(reporttitle, categoriesObjects) {
     else {
       doc.pageBreak();
       doc.cell(paddingOptions).text(categoriesObjects[k].name,h4);
+    }
+
+    if(descriptions)
+    {
+      if(isHTML) {
+        doc.write("<p>"+descriptions[k].description+"</p>");
+      }
+      else {
+        doc.cell(paddingOptions).text(descriptions[k].description);
+      }
     }
 
     var theCategoryId = categoriesObjects[k].id;
@@ -265,7 +343,7 @@ function generateBasicReport() {
   try {
       categoriesOutput = JSON.parse(rawdata);
 
-      console.log("categoriesOutput="+categoriesOutput.length);
+      //console.log("categoriesOutput="+categoriesOutput.length);
   }
   catch(error) {
       console.error(error);
@@ -294,9 +372,9 @@ function generateBasicReport() {
       //console.log("category="+categoriesOutput[j]["category"]+" with "+categoriesOutput[j]["totalViolations"]+" violations");
 
       if(isHTML) {
-        doc.write('<tr><td>'+categoriesOutput[j]["id"].toString()+'</td>');
+        doc.write('<tr><td width="80">'+categoriesOutput[j]["id"].toString()+'</td>');
         doc.write('<td>'+categoriesOutput[j]["category"]+'</td>');
-        doc.write('<td align="right">'+categoriesOutput[j]["totalViolations"].toString()+'</td></tr>');
+        doc.write('<td width="140" align="right">'+categoriesOutput[j]["totalViolations"].toString()+'</td></tr>');
       }
       else {
         var row = table.row()
@@ -321,9 +399,9 @@ function generateBasicReport() {
 
       for(k=0; k<listOfRulesArray.length; k++)
       {
-        doc.write('<tr><td>'+listOfRulesArray[k]["id"].toString()+'</td>');
+        doc.write('<tr><td width="80">'+listOfRulesArray[k]["id"].toString()+'</td>');
         doc.write('<td>'+listOfRulesArray[k]["violationName"]+'</td>');
-        doc.write('<td align="right">'+listOfRulesArray[k]["violationCount"].toString()+'</td></tr>');
+        doc.write('<td width="140" align="right">'+listOfRulesArray[k]["violationCount"].toString()+'</td></tr>');
       }
 
       doc.write('</table>');
@@ -384,9 +462,9 @@ function addDetails(somedetails) {
 
             if(isHTML)
             {
-              doc.write('<tr><td>'+somedetails[detailsj]["Violation Id"].toString()+'</td>');
+              doc.write('<tr><td width="80">'+somedetails[detailsj]["Violation Id"].toString()+'</td>');
               doc.write('<td>'+somedetails[detailsj]["Violation Name"]+'</td>');
-              doc.write('<td align="right">'+somedetails[detailsj]["Number of violation"].toString()+'</td></tr>');
+              doc.write('<td align="right" width="140">'+somedetails[detailsj]["Number of violation"].toString()+'</td></tr>');
 
             }
             else {
@@ -456,9 +534,9 @@ function setupDocument() {
     cell.image(logoImgCast, { height: 0.25*pdf.cm , align: 'right'})*/
 
     doc.write("<h1>"+applicationSummary["Application Name"]+"</h1>");
-    doc.write("<p>Analysis date:&nbsp;"+applicationSummary["Analysis date"]+"</p>");
-    doc.write("<p>Number of Files:&nbsp;"+applicationSummary["Total count of Files"]+"</p>");
-    doc.write("<p>Number of Rules:&nbsp;"+applicationSummary["Analysis date"]+"</p>");
+    doc.write("<ul><li>Analysis date:&nbsp;"+applicationSummary["Analysis date"]+"</li>");
+    doc.write("<li>Number of Files:&nbsp;"+applicationSummary["Total count of Files"]+"</li>");
+    doc.write("<li>Number of Rules:&nbsp;"+applicationSummary["Total number of rules"]+"</li></ul>");
   }
 }
 
@@ -481,7 +559,16 @@ setupDocument();
 
 // generate the output based on the report
 if(report!="") {
-  generateSecurityReport(template.templatetitle,template.templatetags);
+
+  someDescriptions = "";
+  try {
+    someDescriptions = template.templatedescriptions;
+  }
+  catch(error) {
+    // do nothing
+  }
+
+  generateSecurityReport(template.templatetitle,template.templatetags,template.templateheaders,someDescriptions);
 }
 else {
   generateBasicReport();
