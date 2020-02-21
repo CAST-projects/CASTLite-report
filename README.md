@@ -6,12 +6,16 @@ This application will generate a report(PDF or HTML) using the output generated 
 
 Run the following command lines:
 
-    npm install
-    node reportmaker.js --help
+```
+npm install
+node reportmaker.js --help
+```
 
 Please follow the instructions and provide the right inputs to generate the expected report:
 
-    --input: path to the folder where to find the CAST Lite output
-    --output: path where the report will be saved
-    --report: OWASP2017|OWASP2013 (CAST Health Factors if empty)
-    --format: PDF|HTML (PDF by default)
+```
+--input: path to the folder where to find the CAST Lite output
+--output: path where the report will be saved
+--report: OWASP2017|OWASP2013 (CAST Health Factors if empty)
+--format: PDF|HTML (PDF by default)
+```
