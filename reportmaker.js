@@ -54,7 +54,7 @@ else {
 var template;
 
 try {
-  template = require(/*path.join(*/'./'+report+'.template.js');
+  template = require(/*path.join(*/'./templates/'+report+'.template.js');
 }
 catch(error) {
   console.log("Cannot load the template from report:"+report);
