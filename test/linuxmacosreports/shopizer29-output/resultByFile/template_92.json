@@ -1,0 +1,1 @@
+{"file":"./test/sources/shopizer-2.9.0/sm-shop/src/main/webapp/resources/templates/december/css/template.css","ViolationList":[{"ViolationName":"Avoid large Artifacts - too many Lines of Code","ViolationId":7842,"hrefDoc":"/Documentation/7842.json","ViolationsCount":1,"Violations":[{"ID":343,"bookmarks":[{"lineStart":1,"colStart":1,"lineEnd":2,"colEnd":1}]}]}]}

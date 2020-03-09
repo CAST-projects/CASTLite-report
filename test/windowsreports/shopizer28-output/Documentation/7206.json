@@ -1,0 +1,80 @@
+{
+    "id": 7206,
+    "name": "Avoid the use of InstanceOf inside loops",
+    "href": "AIP/quality-rules/7206",
+    "critical": false,
+    "maxWeight": 4,
+    "description": "All methods that use InstanceOf inside a loop will be reported.",
+    "output": "This report lists all methods with a call to instanceof inside a loop.\nIt provides the following information:\n  Method full name",
+    "rationale": "The run-time type checking is a time expensive operation and as such should be avoided within loops.\nIn a more general matter, the use of InstanceOf operator, run-time type checking might indicate a misuse of Object Oriented programming. In deed, it is always recommended to design classes and interfaces so client code do not need to use InstanceOf operator and downcasting. The recommended way is to prefer polymorphism over InstanceOf operator and downcasting.",
+    "reference": "Peter Sestoft (sestoft@dina.kvl.dk)\nhttp://www.dina.dk/~sestoft/papers/performance.pdf",
+    "remediation": "Prefer polymorphism over 'is' operator and downcasting.\n\nIt is always recommended to design classes and interfaces so client code do not need to use InstanceOf operator and downcasting. The recommended way is to prefer polymorphism over InstanceOf operator and downcasting.",
+    "remediationSample": "class BaseExample { ... }\nclass Example1 extends BaseExample { ... }\nclass Examplet2 extends BaseExample { ... }\n\nclass Test {\n  BaseExample[] exList;\n  void method () {\n     for (int i = exList.length-1; i >= 0; i--) {\n       // common method to refactor aMethod1 and aMethod2\n        exList[i]).commonMethod(); // FIXED\n       } \n     }\n  }\n}",
+    "sample": "class BaseExample { ... }\nclass Example1 extends BaseExample { ... }\nclass Example2 extends BaseExample { ... }\n\nclass Test {\n  BaseExample[] exList;\n  void method () {\n     for (int i = exList.length-1; i >= 0; i--) {\n        if (exList[i] instanceof Example1) { // VIOLATION\n          ((Example1) exList[i]).aMethod1();\n       } elseif (exList[i] instanceof Example2) { // VIOLATION\n         ((Example2) exList[i]).aMethod2();\n     }\n  }\n}",
+    "total": "Number of methods",
+    "alternativeName": "Ensure to have polymorphism over 'is' operator and downcasting",
+    "businessCriteria": [
+        {
+            "id": 60014,
+            "name": "Efficiency",
+            "href": "AIP/business-criteria/60014"
+        },
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66068,
+            "name": "Efficiency - Expensive Calls in Loops",
+            "weight": 4,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCPEM-PRF-8",
+            "name": "Control Elements Requiring Significant Resource Element within Control Flow Loop Block",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-1050",
+            "name": "Excessive Platform Resource Consumption within a Loop",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-1050",
+            "name": "Excessive Platform Resource Consumption within a Loop",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

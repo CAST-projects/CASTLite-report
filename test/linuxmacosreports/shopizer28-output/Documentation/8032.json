@@ -1,0 +1,114 @@
+{
+    "id": 8032,
+    "name": "Avoid using a break statement in 'for' loops",
+    "href": "AIP/quality-rules/8032",
+    "critical": false,
+    "maxWeight": 6,
+    "associatedValueName": "Number of violation occurrences",
+    "description": "This rule searches for functions that contain a 'break' statement in a 'for' loop. 'break' statements located in nested loops will also be reported as a violation to this rule.\n\nNote: For C#, foreach statements are not considered because there is no stop condition in the loop definition. Break statements located in nested loops will also be reported as a violation to this rule.\nNote that in VB .NET, the break statement is \"Exit For\"",
+    "output": "Associated to each Function with violations, the Quality Rule provides:\n- Number of violation occurrences\n- Bookmarks for violation occurrences found in the source code:\n  - 'break' statement",
+    "rationale": "A 'for' loop must be straightforward to read. Using too many 'break' statements in 'for' loops makes them more difficult to read.",
+    "remediation": "Try to remove the 'break' statements from the loop and to manage the end-of-loop within the loop condition part.",
+    "sample": "for (int i = 0; i < 10; i++) \n{        \n    if (true) \n    {\n        break;   // Violation\n    }\n    // ...\n}",
+    "total": "Number of functions that contain at least one 'for' loop",
+    "alternativeName": "Ensure you don't use multiple break statement in 'for' loops",
+    "businessCriteria": [
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60011,
+            "name": "Transferability",
+            "href": "AIP/business-criteria/60011"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61024,
+            "name": "Programming Practices - Structuredness",
+            "weight": 6,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 141901,
+            "name": ".NET (Legacy Analyzer)",
+            "href": "AIP/technologies/141901"
+        },
+        {
+            "id": -2,
+            "name": "C",
+            "href": "AIP/technologies/-2"
+        },
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": -3,
+            "name": "C++",
+            "href": "AIP/technologies/-3"
+        },
+        {
+            "id": 1020000,
+            "name": "HTML5",
+            "href": "AIP/technologies/1020000"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "C-CPP",
+            "id": "MISRA-C-2012-General",
+            "name": "General",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "C-CPP",
+            "id": "MISRA-CPP-2008-General",
+            "name": "General",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "M7-2016",
+            "name": "Poor Code Quality",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

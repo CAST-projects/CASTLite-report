@@ -1,0 +1,92 @@
+{
+    "id": 4594,
+    "name": "Avoid using 'java.io.File'",
+    "href": "AIP/quality-rules/4594",
+    "critical": false,
+    "maxWeight": 1,
+    "associatedValueName": "Associated Value",
+    "description": "Java artifacts should not use 'java.io.File' for application deployed on a Web Server or an Application Server to avoid any kind of dependencies with deployment environment of your application\n\nThis rule is computed only when web.xml or ejb-jar.xml file are present.",
+    "output": "This report lists all java artifacts using 'java.io.File'.\nIt provides the following information:\n Artifact full name",
+    "rationale": "For portability reasons, in Web applications or Application Server, 'java.io.File' should not be used since it means giving an absolute path and therefore being dependent on the environment where the application is deployed.\n\nAlso, a program violates the Enterprise JavaBeans (EJB) specification by using the java.io package.",
+    "reference": "https://cwe.mitre.org/data/definitions/576.html\n\nhttps://cwe.mitre.org/data/definitions/73.html",
+    "remediation": "Prefer using RessourceBundle.",
+    "sample": "File f = new File(request.getParameter(\"fileName\"))\n\n---------------\n\nFile f = new File(configPath + \"avatar.\" + request.getParameter(\"extension\") )",
+    "total": "Number of Java objects",
+    "alternativeName": "Prefer not using 'java.io.File' to avoid violating the Enterprise JavaBeans (EJB) specification",
+    "businessCriteria": [
+        {
+            "id": 66032,
+            "name": "Architectural Design",
+            "href": "AIP/business-criteria/66032"
+        },
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61004,
+            "name": "Architecture - OS and Platform Independence",
+            "weight": 1,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-73",
+            "name": "External Control of File Name or Path",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-576",
+            "name": "EJB Bad Practices: Use of Java I/O",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.1",
+            "name": "Injection flaws, particularly SQL injection. Also consider OS Command Injection, LDAP and XPath injection flaws as well as other injection flaws.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.1",
+            "name": "Injection flaws, particularly SQL injection. Also consider OS Command Injection, LDAP and XPath injection flaws as well as other injection flaws.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

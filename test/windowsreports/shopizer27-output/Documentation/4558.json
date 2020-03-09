@@ -1,0 +1,71 @@
+{
+    "id": 4558,
+    "name": "Avoid large Classes - too many Fields",
+    "href": "AIP/quality-rules/4558",
+    "critical": false,
+    "maxWeight": 6,
+    "associatedValueName": "Number of Fields",
+    "description": "Classes should have less than X Fields.\nThe threshold is a parameter that can be changed at will.",
+    "output": "This report lists all the Classes having more than X Fields.\nIt provides the following information:\n - Class full name\n - Number of Fields",
+    "rationale": "For maintainability and readability reasons, Classes should not have too many Fields.",
+    "remediation": "Review the Class design to reduce the number of Fields",
+    "total": "Number of Java classes",
+    "alternativeName": "Ensure that the classes have a resonable number of fields",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60011,
+            "name": "Transferability",
+            "href": "AIP/business-criteria/60011"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61022,
+            "name": "Volume - Number of Components",
+            "weight": 6,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        {
+            "name": "Maximum field count per class",
+            "description": "Maximum field count per class",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        30
+                    ]
+                }
+            ]
+        }
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

@@ -1,0 +1,67 @@
+{
+    "id": 4600,
+    "name": "Avoid using 'java.System.exit()'",
+    "href": "AIP/quality-rules/4600",
+    "critical": false,
+    "maxWeight": 2,
+    "description": "Java artifacts should not use 'java.System.exit()'  for application deployed on a Web Server or an Application Server (when web.xml and/or ejb-jar.xml file are present)",
+    "output": "This report lists all java artifacts using 'java.System.exit()'.\nIt provides the following information:\n - Artifact full name",
+    "rationale": "Using 'java.System.exit()' is prohibited since it goes against the Exception error handling model.",
+    "total": "Number of Java artifacts",
+    "alternativeName": "Ensure you don't use 'java.System.exit()' to know what happened when you exit your program",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61014,
+            "name": "Programming Practices - Error and Exception Handling",
+            "weight": 2,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-382",
+            "name": "J2EE Bad Practices: Use of System.exit()",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

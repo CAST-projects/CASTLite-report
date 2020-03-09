@@ -1,0 +1,74 @@
+{
+    "id": 4610,
+    "name": "Avoid using anonymous Classes",
+    "href": "AIP/quality-rules/4610",
+    "critical": false,
+    "maxWeight": 3,
+    "description": "Reports all anonymous class except classes that implement a specific interface.  The threshold parameter permits to set the list of interfaces. This list is initialized with the interface java.util.EventListener (to exclude event listener in swing) and can be updated with other interfaces.",
+    "output": "This report lists all Classes using anonymous Classes except those that are implementing a specific interface defined in the threshold parameter.\nIt provides the following information:\n Class full name",
+    "rationale": "For maintenance reason, using anonymous Classes should be done only when necessary since it makes the application more difficult to understand and modify. There are some exception to this rule such as event listener in swing, the visitor pattern...",
+    "total": "Number of classes",
+    "alternativeName": "Prefer not using anonymous Classes for maintenance reason",
+    "businessCriteria": [
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60011,
+            "name": "Transferability",
+            "href": "AIP/business-criteria/60011"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61010,
+            "name": "Complexity - OO Inheritance and Polymorphism",
+            "weight": 3,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        {
+            "name": "Interfaces to exclude",
+            "description": "List of Interfaces to exclude",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        "java.util.EventListener"
+                    ]
+                }
+            ]
+        }
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

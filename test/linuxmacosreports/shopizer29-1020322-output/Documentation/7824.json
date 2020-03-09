@@ -1,0 +1,142 @@
+{
+    "id": 7824,
+    "name": "Avoid directly throwing instance of Exception class",
+    "href": "AIP/quality-rules/7824",
+    "critical": true,
+    "maxWeight": 8,
+    "description": "This Quality Rule reports all methods throwing  an exception of type Exception. The exception Exception should never been thrown.",
+    "output": "This report lists all Artifacts throwing an exception of type Exception.\nIt provides the following information:\n- Artifact full name",
+    "rationale": "Whenever a method throws an exception of type Exception, it prevents its callers from carrying out the specific recovery process that is needed and as a consequence this will threaten both application robustness and security. For example, each exception related to resource allocation whose catch does not explicitly release the resource might create a \"resource leak\". When a leak occurs on a limited set of available resources, such as a database connection, the application can then become unusable because resources cannot be allocated any more. \nThe application also becomes difficult to support and run in production as root-cause analysis is made more difficult. The support teams might not even be aware that something went wrong (by catching Exception, RuntimeException might not be visible any more).",
+    "reference": "CISQ rule: ASCRM-CWE-397.",
+    "remediation": "The method must throw a Subclass of the generic Exception that provides valuable information about the exception that occurred in order to help programmers calling this method to write the appropriate recovery or error management code.",
+    "remediationSample": "void f()\n{\n,,,\n   throw new MyException(\"My Message\"); \n,,,\n}",
+    "sample": "void f()\n{\n,,,\n   throw new Exception(\"My Message\"); // <= VIOLATION\n,,,\n}",
+    "total": "Number of artifacts",
+    "alternativeName": "Always Subclass Exception and throw the subclassed Classes, do not throw the exception Exception.",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61014,
+            "name": "Programming Practices - Error and Exception Handling",
+            "weight": 8,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 141901,
+            "name": ".NET (Legacy Analyzer)",
+            "href": "AIP/technologies/141901"
+        },
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCRM-CWE-397",
+            "name": "Declaration of Throws for Generic Exception",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CISQ",
+            "id": "ASCSM-CWE-397",
+            "name": "Declaration of Throws for Generic Exception",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-397",
+            "name": "Declaration of Throws for Generic Exception",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-SI-11",
+            "name": "Error Handling",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A3-2017",
+            "name": "Sensitive Data Exposure",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A6-2013",
+            "name": "Sensitive Data Exposure",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.5",
+            "name": "Improper error handling",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.5",
+            "name": "Improper error handling",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "STIG-V4R8",
+            "id": "STIG-V-70245",
+            "name": "The application must protect the confidentiality and integrity of transmitted information.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        98.0,
+        99.0,
+        99.5,
+        99.99
+    ]
+}

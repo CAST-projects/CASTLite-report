@@ -1,0 +1,85 @@
+{
+    "id": 7562,
+    "name": "Avoid static Field of type collection",
+    "href": "AIP/quality-rules/7562",
+    "critical": false,
+    "maxWeight": 4,
+    "description": "Reports all static field defined as a class or interface that implements:\n\n* java.util.Collection or java.util.Collection<E>\n\n* or java.util.Map or java.util.Map<K,V> except when:\n   - it is the class or a subclass of java.util.WeakHashMap or java.util.WeakHashMap<K,V>\n   - the field is defined as an interface and is initialized with an instance of the class or a subclass of  java.util.WeakHashMap or java.util.WeakHashMap<K,V>.",
+    "output": "This report lists all static field defined as collection (class or interface).\nIt provides the following information:\n  Field full name",
+    "rationale": "In a production environment, memory leaks can force organizations to add more memory and hardware resources. They can even cause an application to crash unexpectedly. In theory, the garbage collector is responsible to manage memory and should avoid these issues.\n\nIn practice, static collection classes, such as HashMap and Vector can cause memory leak. Static collections are likely to cause memory leaks because static variables remain in memory as long as the application runs, regardless of its object creation and destruction. So because their life cycle is the application duration, the objects that they reference will be kept in memory until the application end.",
+    "reference": "http://weblogs.java.net/blog/enicholas/archive/2006/05/understanding_w.html\nhttp://websphere.sys-con.com/read/44716.htm",
+    "remediation": "You can either check that objects added in the collection are removed when required or use weak references that will leverage the garbage collector's ability to determine reachability of referenced objects for you.",
+    "remediationSample": "class Sample {\n    // FIXED\n    static WeakHashMap my_map;\n    ...\n}",
+    "sample": "class Sample {\n    // VIOLATION\n    static HashMap my_map;\n    ...\n}",
+    "total": "Number of static field defined as collection (class or interface), java.util.WeakHashMap or java.util.WeakHashMap<K,V>",
+    "alternativeName": "Ensure that static Field of type collection are not used",
+    "businessCriteria": [
+        {
+            "id": 60014,
+            "name": "Efficiency",
+            "href": "AIP/business-criteria/60014"
+        },
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61018,
+            "name": "Efficiency - Memory, Network and Disk Space Management",
+            "weight": 4,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCPEM-PRF-15",
+            "name": "Storable and Member Data Element Reference Missing De-Referencing Control Element",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-1091",
+            "name": "Use of Object without Invoking Destructor Method",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-1091",
+            "name": "Use of Object without Invoking Destructor Method",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

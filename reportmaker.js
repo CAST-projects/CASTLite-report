@@ -2,6 +2,7 @@
 
 var path = require('path');
 var os = require('os');
+var readline = require('readline')
 
 var myArgs = process.argv.slice(2);
 
@@ -9,6 +10,8 @@ var input = '';
 var output = '';
 var report = '';
 var format = 'PDF';
+
+var doc;
 
 if ( myArgs.length > 0) {
 
@@ -62,12 +65,12 @@ catch(error) {
   process.exit(1);
 }
 
-console.log(template.templatetitle);
+//console.log(template.templatetitle);
 
 function displayhelp() {
 
-  console.log("Report Maker Help");
-  console.log("--input: path to the folder where to find the CAST Lite output");
+  console.log("CARL Report Maker Help");
+  console.log("--input: path to the folder where to find the CARL output");
   console.log("--output: path where the report will be saved");
   console.log("--report: OWASP2017|OWASP2013|CWETop252011|CWETop252019|OWASPMobile2016 (CAST Health Factors if empty)");
   console.log("--format: PDF|HTML (PDF by default)");
@@ -78,19 +81,194 @@ function displayhelp() {
 const fs   = require('fs');
 const pdf = require('pdfjs');
 
-// read the json file
+// read the application json file
 let rawdata = fs.readFileSync(input+'/ApplicationSummary.json');
 let applicationSummary;
 
 try {
   applicationSummary = JSON.parse(rawdata);
 
-  console.log(applicationSummary["Application Name"]+' report');
+  console.log(applicationSummary["Application Name"]+' report to be started...');
 }
 catch(error) {
   console.error(error);
   process.exit(1);
 }
+
+// read the results by QRs json file
+let byQRsData = [];
+let readInterfaces = [];
+let readInterfaceIndexes = [];
+let readInterfaceFilePaths = [];
+let allScannedFiles = [];
+
+let closedInterfaces = 0;
+
+
+const resultsByFilePath = path.join(input+"/resultByFile")
+files = fs.readdirSync(resultsByFilePath);
+
+let allBookmarksByRuleId = {};
+
+files.forEach(function(file) {
+
+  // let scan file by file and regroup the information by rule id for rendering
+  //
+  // rule id => file => (primary) bookmarks -> associated bookmarks
+
+  try {
+
+    let byFileRawdata = fs.readFileSync(path.join(resultsByFilePath,file));
+    let byQRResults = JSON.parse(byFileRawdata);
+
+    var violationList = byQRResults["ViolationList"];
+    violationList.forEach((item, i) => {
+
+      var bookmarks = [];
+
+      if(Object.keys(allBookmarksByRuleId).indexOf(item["ViolationId"])!=-1) {
+        bookmarks = allBookmarksByRuleId[item["ViolationId"]];
+      }
+      else {
+        allBookmarksByRuleId[item["ViolationId"]] = bookmarks;
+      }
+
+      var violations = item["Violations"];
+      violations.forEach((violationitem, i) => {
+        var violationbookmarks = violationitem["bookmarks"];
+        violationbookmarks.forEach((violationbookmark, i) => {
+
+          // bookmark structure
+          // lineStart colStart
+          // lineEnd colEnd
+          bookmarks.push({"file":byQRResults["file"],"bookmark":violationbookmark,"codes":[],"ID":violationitem["ID"]});
+
+          if(allScannedFiles.indexOf(byQRResults["file"])==-1) {
+            allScannedFiles.push(byQRResults["file"])
+          }
+        });
+
+        // manage associated bookmark
+        /*var violationbookmarks = violationitem["associated-bookmarks"];
+        violationbookmarks.forEach((violationbookmark, i) => {
+
+          // bookmark structure
+          // lineStart colStart
+          // lineEnd colEnd
+          bookmarks.push({"file":violationbookmark["associated-bookmark-file-name"],"bookmark":violationbookmark,"codes":[],"ID":violationitem["ID"]});
+        });*/
+      });
+
+      //console.log(bookmarks);
+
+    });
+  }
+  catch(error) {
+
+      console.log("Cannot parse "+file+ " as json...");
+      //console.error(error);
+      //process.exit(1);
+  }
+});
+
+allScannedFiles.forEach(function(thefile) {
+
+    //process.exit(1);
+
+    var readInterface;
+
+    try {
+      // we are going to scan the file and keep the bookmarked code
+
+      readInterface = readline.createInterface({
+        input: fs.createReadStream(thefile),
+//        output: process.stdout,
+//        console: false
+      });
+
+      readInterfaces.push(readInterface);
+      readInterfaceIndexes.push(0);
+      readInterfaceFilePaths.push(thefile);
+    }
+    catch(error) {
+      console.log(thefile+" cannot be found:"+error);
+    }
+
+    //console.log("readInterfaceIndexes:"+readInterfaceIndexes.length);
+
+    //process.exit(1)
+
+    readInterface.on('line', function(line) {
+
+      var interfaceIndex = readInterfaces.indexOf(readInterface);
+
+      var lineindex = readInterfaceIndexes[interfaceIndex];
+      lineindex = lineindex+1;
+      readInterfaceIndexes[interfaceIndex] = lineindex;
+      var filepath = readInterfaceFilePaths[interfaceIndex];
+
+      //console.log("read line "+lineindex+" of "+filepath);
+
+      Object.keys(allBookmarksByRuleId).forEach((ruleid, i) => {
+
+        //console.log("BEFORE:"+allBookmarksByRuleId[ruleid].length);
+
+        allBookmarksByRuleId[ruleid].forEach((bookmarkfile, i) => {
+
+          //console.log(bookmarkfile["file"]);
+
+          if(bookmarkfile["file"]===filepath) {
+            var realBookmark = bookmarkfile["bookmark"];
+            if((lineindex >= realBookmark["lineStart"]) && (lineindex <= realBookmark["lineEnd"])) {
+
+              bookmarkfile["codes"].push([lineindex,line]);
+            }
+          }
+        });
+      });
+
+
+
+      /*bookmarks.forEach((bookmark, i) => {
+
+          //console.log("checking bookmark:"+bookmark["bookmark"]["lineStart"]+" VS "+lineindex);
+
+        });*/
+    }).on('close', function() {
+
+      closedInterfaces = closedInterfaces+1;
+
+      if(readInterfaces.length == closedInterfaces)
+      {
+        //console.log(allBookmarksByRuleId);
+
+        console.log("allBookmarks:"+Object.keys(allBookmarksByRuleId).length);
+
+        // start the document here
+
+        setupDocument();
+
+        // generate the output based on the report
+        if(report!="") {
+
+          someDescriptions = "";
+          try {
+            someDescriptions = template.templatedescriptions;
+          }
+          catch(error) {
+            // do nothing
+          }
+
+          generateSecurityReport(template.templatetitle,template.templatetags,template.templateheaders,someDescriptions,allBookmarksByRuleId);
+        }
+        else {
+          generateBasicReport();
+        }
+
+        finalizeDocument();
+      }
+    });
+});
 
 const stylecss = " \
 body { height:100%; font-family: sans-serif, Arial; } \
@@ -106,6 +284,9 @@ tbody tr { \
     color: #101010; \
     line-height: 1.2; \
     font-weight: unset; \
+code { \
+  background-color: #EEF3FB; \
+  margin: 8px; }\
 }";
 
 const fonts = {
@@ -135,7 +316,7 @@ const h4 = { fontSize: 12, font: fonts.HelveticaBold };
 const paragraphFormat = {fontSize: 11, color: "#AAAAAA"};
 
 
-function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions) {
+function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions, allBookmarksByRuleId) {
 
   const isHTML = (format == 'HTML');
 
@@ -272,8 +453,11 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
     doc.write('</table>');
   }
 
+
   // display details per security category
   Object.keys(categoriesObjects).forEach(k => {
+
+    currentRuleIdsWithViolations = [];
 
     if(isHTML) {
       doc.write('<h4>'+categoriesObjects[k].name+'</h4>');
@@ -302,6 +486,16 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
           if(theCategoryId == resultTags[j]["Tag Name"]) {
             hasFindings = 1
             addDetails(resultTags[j]["Details"]);
+
+            var results = resultTags[j]["Details"];
+            results.forEach( (quickresult,index) => {
+              currentRuleIdsWithViolations.push(quickresult["Violation Id"])
+            });
+
+
+            console.log(theCategoryId);
+            console.log(currentRuleIdsWithViolations.length + " rules" );
+            console.log(currentRuleIdsWithViolations );
           }
     }
 
@@ -316,7 +510,190 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
         doc.text("No findings",paragraphFormat);
       }
     }
+    else {
+
+      /*Object.entries(allBookmarksByRuleId).forEach((bookmark, i) => {
+
+        //console.log(bookmark);
+
+      });*/
+
+      //console.log(currentRuleIdsWithViolations);
+
+      currentRuleIdsWithViolations.forEach((ruleid, i) => {
+
+        var alreadyPrinted = 0;
+
+
+        if(isHTML) {
+          doc.write("<p>"+ruleid+" - Details</p>");
+        }
+
+        var allQRBookmarks = allBookmarksByRuleId[ruleid];
+
+        //console.log(allQRBookmarks);
+
+        if(allQRBookmarks) {
+
+          allQRBookmarks.forEach((qrBookmark, j) => {
+
+            var bookmark = qrBookmark["bookmark"];
+            var allCodes = qrBookmark["codes"];
+
+            if(isHTML) {
+              doc.write("<p>");
+              doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
+              doc.write("</p><code>");
+
+              allCodes.forEach((thecode, i) => {
+
+                var thelineindex = thecode[0];
+                var theline = thecode[1];
+
+                if(i==0) {
+                  const colStart = parseInt(bookmark["colStart"]);
+                  theline = theline.substring(0,colStart)+"!MARK!"+theline.substring(colStart);
+                }
+
+                if(i==(allCodes.length-1)) {
+                  const colEnd = parseInt(bookmark["colEnd"]);
+                  theline = theline.substring(0,6*(i==0)+colEnd)+"!/MARK!"+theline.substring(6*(i==0)+colEnd);
+                }
+
+                console.log("BEFORE:"+theline);
+
+                theline = theline.replace(new RegExp('\t','g'),'    ');
+                theline = theline.replace(new RegExp('<','g'),'&lt;');
+                theline = theline.replace(new RegExp('>','g'),'&gt;');
+                theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
+                theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');
+
+                console.log("AFTER:"+theline);
+
+                doc.write("<b>"+thelineindex+"</b>:"+theline);
+              });
+
+              doc.write("</code>");
+            }
+            else {
+              doc.text(bookmark);
+            }
+          });
+        }
+      });
+
+
+
+      // check data flow rule first
+      /*byQRsDFData.forEach( (theQR,index) => {
+
+        if(currentRuleIdsWithViolations.includes(theQR["ViolationId"])) {
+          console.log("DF -"+theQR["ViolationName"]+" - "+theQR["ViolationId"]);
+          if(isHTML) {
+
+          }
+          else {
+
+            doc.text("Details of "+theQR["ViolationId"] + ' | '+theQR["ViolationName"]);
+          }
+        }
+      });*/
+
+      // then we can add the violation bookmarks
+      byQRsData.forEach( (theFile,index) => {
+
+        const theQRs = theFile["ViolationList"];
+        const theFilePath = theFile["file"];
+        var alreadyPrinted = 0;
+        //console.log(theQRs);
+
+        theQRs.forEach((theQR, i) => {
+
+          if(currentRuleIdsWithViolations.includes(theQR["ViolationId"])) {
+
+            console.log(theQR["ViolationName"]+" - "+theQR["ViolationId"]);
+
+            if(isHTML) {
+
+              if(alreadyPrinted==0) {
+
+                doc.write("<p><b>"+theFilePath+"</b></p>");
+                alreadyPrinted = 1;
+              }
+
+              doc.write("<p>"+theQR["ViolationId"]+ ' | '+theQR["ViolationName"]+"</p>");
+            }
+            else {
+              if(alreadyPrinted==0) {
+
+                doc.text(theFilePath);
+                alreadyPrinted = 1;
+              }
+
+              doc.text("Details of "+theQR["ViolationId"] + ' | '+theQR["ViolationName"]);
+            }
+            var listOfViolations = theQR["Violations"];
+            var listindex;
+
+            for(listindex=0; listindex<listOfViolations.length; listindex++)
+            {
+              var allCodes = allBookmarks[listindex];
+              var bookmarks = listOfViolations[listindex]["bookmarks"];
+              if(isHTML) {
+                doc.write("<ul>");
+              }
+              bookmarks.forEach ((bookmark,index) => {
+
+                if(isHTML) {
+
+                  doc.write("<li>Bookmark starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and finishes at line:"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
+                  doc.write("<code>");
+                  allCodes.forEach((thecode, i) => {
+                    doc.write(thecode);
+                  });
+                  doc.write("</code>");
+                  doc.write("</li>");
+
+                }
+                else {
+
+                  doc.text(bookmark["file"]);
+                  doc.text("Bookmark starts at line: "+bookmark["lineStart"]+"("+bookmark["colStart"]+") and finishes at line:"+bookmark["lineEnd"]+"("+bookmark["colEnd"]+")",paragraphFormat);
+
+                  /*try {
+                    var myInterface = readline.createInterface({
+                        input: fs.createReadStream(path.join(bookmark["file"]))
+                    });
+                  }
+                  catch(error) {
+                    console.log("Error:"+error+"with the file "+file);
+                  }
+
+                    var lineno = 0;
+                    myInterface.on('line', function (line) {
+                      lineno++;
+                      if(lineno == bookmark["lineStart"]) {
+                        doc.text(line);
+                      }
+                      console.log('Line number ' + lineno + ': ' + line);
+                    });*/
+                }
+                //console.log(bookmark["file"]+" | "+bookmark["lineStart"]+" | "+bookmark["colStart"]+" | "+bookmark["lineEnd"]+" | "+bookmark["colEnd"])
+
+              });
+
+              if(isHTML) {
+                doc.write("</ul>");
+              }
+            }
+          }
+        });
+      });
+    }
   });
+
+
+
 }
 
 function generateBasicReport() {
@@ -548,30 +925,11 @@ function finalizeDocument() {
       doc.write("</body></html>");
   }
 
-  doc.end();
-}
-
-// start the document here
-
-var doc;
-
-setupDocument();
-
-// generate the output based on the report
-if(report!="") {
-
-  someDescriptions = "";
   try {
-    someDescriptions = template.templatedescriptions;
+    doc.end();
   }
   catch(error) {
-    // do nothing
+    console.log("Cannot close the document "+error);
+    process.exit(1);
   }
-
-  generateSecurityReport(template.templatetitle,template.templatetags,template.templateheaders,someDescriptions);
 }
-else {
-  generateBasicReport();
-}
-
-finalizeDocument();

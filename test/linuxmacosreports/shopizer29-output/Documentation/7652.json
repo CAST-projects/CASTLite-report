@@ -1,0 +1,85 @@
+{
+    "id": 7652,
+    "name": "Avoid throwing an exception in a catch block without chaining it",
+    "href": "AIP/quality-rules/7652",
+    "critical": false,
+    "maxWeight": 6,
+    "description": "Reports all methods that reference a constructor of an exception (a class that inherits from Throwable) in a catch block except where:\n- java.lang.Throwable is the type of one parameter in the signature of the constructor\n- a call to the method or a method that overrides java.lang.Throwable.initCause(Throwable cause) \n\nNote that this rule does not check that the caught exception is the exception that is passed as the argument of the new Exception constructor or the initCause method.",
+    "output": "This report lists all methods that contain try/catch blocks where an exception (a class that inherits from Throwable) constructor has java.lang.Throwable as the type of one parameter in the signature of the constructor or a call to the method (or a method that overrides) java.lang.Throwable.initCause(Throwable cause). It provides the following information: Method full name",
+    "rationale": "There are many cases where it is very useful to change an exception's class. But if you create a new exception using the original exception message (i.e. MyException(originalException.getMessage())) valuable information about the original exception will not be propagated.\n\nAs such, you may loss the original exception's class and stack trace. This lack of information will slow the investigation process when an issue occurs in validation or in production.",
+    "reference": "http://www.developer.com/java/other/article.php/1431531/Chained-Exceptions-in-Java.htm",
+    "remediation": "Use Exception(String message, Throwable cause) or Exception(Throwable cause) signature to chain the exceptions. Exception chains contain information about the full call stack, thus allowing a change of type on the exception's way up the call stack without loss of stack information.",
+    "remediationSample": "private void init() throws InitException {\n  ...\n  } catch( FileNotFoundException ex) {\n      throw new InitException(\"File Not Found\", ex); // FIXED\n   }\n}",
+    "sample": "private void init() throws InitException {\n  ...\n  } catch( FileNotFoundException ex) {\n       throw new InitException(ex.getMessage()); // VIOLATION\n   }\n}",
+    "total": "Number of methods that throw an exception (a class that inherits from Throwable) using a constructor in a catch block",
+    "alternativeName": "Ensure that exceptions  throwed in a catch block  are cached",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61014,
+            "name": "Programming Practices - Error and Exception Handling",
+            "weight": 6,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-778",
+            "name": "Insufficient Logging",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-AU-12",
+            "name": "Audit Generation",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-778",
+            "name": "Insufficient Logging",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

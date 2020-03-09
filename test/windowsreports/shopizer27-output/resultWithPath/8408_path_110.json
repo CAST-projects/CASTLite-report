@@ -1,0 +1,1 @@
+{"ViolationId":8408,"ViolationName":"Ensure you don't use user input without validation","hrefDoc":"\\Documentation\\8408.json","ID":110,"bookmarks":[{"step":0,"path":"D:\\shopizer-2.7.0+JARS\\shopizer-2.7.0\\sm-shop\\src\\main\\java\\com\\salesmanager\\shop\\store\\api\\v0\\product\\ShopProductRESTController.java","lineStart":194,"colStart":65,"lineEnd":194,"colEnd":70}]}

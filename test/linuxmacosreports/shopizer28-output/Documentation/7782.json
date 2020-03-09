@@ -1,0 +1,101 @@
+{
+    "id": 7782,
+    "name": "Avoid empty finally blocks",
+    "href": "AIP/quality-rules/7782",
+    "critical": false,
+    "maxWeight": 6,
+    "description": "This metric reports all methods with at least one empty finally block (empty or only containing comments). In a try and catch/finally statement, finally blocks should contain code to handle the thrown exception.",
+    "output": "This report lists all Artifacts with an empty finally block. It provides the following information: Artifact full name",
+    "rationale": "Finally blocks must be used to execute the code that is needed after either the try and/or the catch block have been executed. It is usually the place to code the release of resources used in the try block. As such, an empty finally block is most probably the sign of potential \"resource leaks\" that will jeopardize the application's stability.",
+    "remediationSample": "try { ,,, }\ncatch ( MyException e)\n{ ,,, }\nfinally\n{\n  DoSomething();\n}",
+    "sample": "try { ... }\ncatch ( MyException e)\n{ ,,, }\nfinally\n{\n  // DO NOTHING <= VIOLATION\n}",
+    "total": "Number of artifacts",
+    "alternativeName": "Avoid empty finally blocks",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61014,
+            "name": "Programming Practices - Error and Exception Handling",
+            "weight": 6,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 141901,
+            "name": ".NET (Legacy Analyzer)",
+            "href": "AIP/technologies/141901"
+        },
+        {
+            "id": -19,
+            "name": "ASP",
+            "href": "AIP/technologies/-19"
+        },
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 1020000,
+            "name": "HTML5",
+            "href": "AIP/technologies/1020000"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCRM-RLB-1",
+            "name": "Empty Exception Block",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "M7-2016",
+            "name": "Poor Code Quality",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

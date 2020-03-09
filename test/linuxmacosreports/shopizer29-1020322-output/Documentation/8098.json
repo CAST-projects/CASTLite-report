@@ -1,0 +1,128 @@
+{
+    "id": 8098,
+    "name": "Avoid uncontrolled format string",
+    "href": "AIP/quality-rules/8098",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Call stack from user input source down to the string format method",
+    "description": "Using CAST data flow engine, this metric detects execution paths from user input methods down to format string manipulation methods which open vulnerabilities to uncontrolled format string flaw.",
+    "output": "List all methods that miss calling the required input validation calls \n\nIt provides the following information: \n - Method full name \n - Call stack from user input source down to the string format method.",
+    "rationale": "The programmer rarely intends for a format string to be user-controlled at all. This weakness is frequently introduced in code that constructs log messages, where a constant format string is omitted.\nIn cases such as localization and internationalization, the language-specific message repositories could be an avenue for exploitation, but the format string issue would be resultant, since attacker control of those repositories would also allow modification of message length, format, and content.\nAs a consequence, format string problems allow for information disclosure which can severely simplify exploitation of the program.",
+    "reference": "CWE-134: Use of Externally-Controlled Format String\nhttps://cwe.mitre.org/data/definitions/134.html\n\nOpen Web Application Security Project (OWASP)\nhttps://www.owasp.org/index.php/A5_2004_Buffer_Overflow",
+    "remediation": "Use authorized sanitization methods.",
+    "remediationSample": "Review all inputs.\nDon't use inputs in formatters.",
+    "sample": "public class FormatterCase {\n    FormatterCase() {}\n \n    public void printStreamFormat(String val) throws SQLException {\n        PrintStream ps = new PrintStream(new FileOutputStream(FileDescriptor.out));\n        // format a string\n        ps.printf(val, \"Hello\");// VIOLATION\n        // flush the stream\n        ps.flush();\n    }\n}\n\npublic class PrintWithReqFormat {\n        FormatterCase formatter = FormatterCase();\n \n        PrintReq() {}\n \n        public void execute(ServletRequest req) throws Exception {\n               String format = req.getParameter(\"format\");\n               formatter.printStreamFormat(format);\n       }\n}",
+    "total": "Number of potentially vulnerable methods",
+    "alternativeName": "Ensure when you use a function that accepts a format string as an argument, the argument has been sanitized when it originates from an external source.",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66062,
+            "name": "Secure Coding - Input Validation",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCSM-CWE-134",
+            "name": "Format String Improper Input Neutralization",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-134",
+            "name": "Use of Externally-Controlled Format String",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-SI-10",
+            "name": "Information Input Validation",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-134",
+            "name": "Use of Externally-Controlled Format String",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A1-2013",
+            "name": "Injection",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A1-2017",
+            "name": "Injection",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.1",
+            "name": "Injection flaws, particularly SQL injection. Also consider OS Command Injection, LDAP and XPath injection flaws as well as other injection flaws.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.1",
+            "name": "Injection flaws, particularly SQL injection. Also consider OS Command Injection, LDAP and XPath injection flaws as well as other injection flaws.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "STIG-V4R8",
+            "id": "STIG-V-70261",
+            "name": "The application must protect from command injection.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        90.0,
+        95.0,
+        99.0,
+        100.0
+    ]
+}

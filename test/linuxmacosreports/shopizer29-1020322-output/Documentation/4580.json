@@ -1,0 +1,54 @@
+{
+    "id": 4580,
+    "name": "Good use of Interfaces when instantiating a collection",
+    "href": "AIP/quality-rules/4580",
+    "critical": false,
+    "maxWeight": 5,
+    "associatedValueName": "Collection Class Fullname",
+    "description": "Report any fields declaration whose type is a class that implements an interface of type java.lang.Collection, java.lang.Collection<T>, java.lang.Map or java.lang.Map<U,V> or that implements an interface that inherits from these any of the aforementioned interfaces.",
+    "output": "This report lists all the fields initialized with the Collection and Map implementation class. It provides the following information:\n - Field Full Name\n - Collection Class Fullname",
+    "rationale": "Using the implementation class of a collection as the type of your instance ties your code to this specific implementation and makes it difficult to change the implementation class in the future.\n\nFor example, if you use the java.util.Collection interface, you can change your implementation class from a Set to a List or to a Queue according to your needs and performance requirements.",
+    "reference": "http://java.sun.com/docs/books/tutorial/collections/interfaces/index.html",
+    "remediation": "Declare the type as an interface of a more appropriate collection.",
+    "total": "Number of fields whose type implements or extends java.lang.Collection, java.lang.Collection<T>, java.lang.Map or java.lang.Map<U,V>",
+    "alternativeName": "Ensure you declare the type as an interface of a more appropriate collection.",
+    "businessCriteria": [
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61020,
+            "name": "Programming Practices - Modularity and OO Encapsulation Conformity",
+            "weight": 5,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

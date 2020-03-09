@@ -1,0 +1,170 @@
+{
+    "id": 7752,
+    "name": "Avoid file path manipulation vulnerabilities",
+    "href": "AIP/quality-rules/7752",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Call stack from user input source down to the target file path command method",
+    "description": "Using CAST data-flow engine, this metric detects execution paths from user input methods down to file creation methods, paths which are open vulnerabilities to operating system injection flaws.",
+    "output": "List all methods that miss calling the required input validation calls\n\nIt provides the following information:\n - Method full name\n - Call stack from user input source down to the target file path command method.",
+    "rationale": "The software does not properly neutralize special elements that are part of paths or file names used in file system operations. This could allow an attacker to access or modify system files or other files that are critical to the application.",
+    "reference": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')\nhttps://cwe.mitre.org/data/definitions/22.html\n\nCWE-73: External Control of File Name or Path\nhttps://cwe.mitre.org/data/definitions/73.html\n\nCWE-434: Unrestricted Upload of File with Dangerous Type\nhttps://cwe.mitre.org/data/definitions/434.html\n\nOpen Web Application Security Project (OWASP) \nhttps://www.owasp.org/index.php/Top_10-2017_A5-Broken_Access_Control\n\nCISQ rule: ASCSM-CWE-078.",
+    "remediation": "Assume all input is malicious. \nAvoid using inputs. If it is not possible, use an \"accept known good\" input validation strategy, i.e., use stringent white-lists that limit the character set based on the expected value of the parameter in the request. This will indirectly limit the scope of an attack.\nDo not rely exclusively on a filtering mechanism that removes potentially dangerous characters. This is equivalent to a blacklist, which may be incomplete (CWE-184). For example, filtering \"/\" is insufficient protection if the filesystem also supports the use of \"\\\" as a directory separator. Another possible error could occur when the filtering is applied in a way that still produces dangerous data (CWE-182). For example, if \"../\" sequences are removed from the \".../...//\" string in a sequential fashion, two instances of \"../\" would be removed from the original string, but the remaining characters would still form the \"../\" string.",
+    "remediationSample": "fis = new FileInputStream(cfg.getProperty(\"sub\")+\".txt\");\n//code a validate function for the input recieved \"sub\"\namt = fis.read(arr);\nout.println(arr);",
+    "sample": "The following code uses input from a configuration file to determine which file to open and echo back to the user. If the program runs with privileges and malicious users can change the configuration file, they can use the program to read any file on the system that ends with the extension .txt.\n\nfis = new FileInputStream(cfg.getProperty(\"sub\")+\".txt\");\namt = fis.read(arr);\nout.println(arr);",
+    "total": "Number of potentially vulnerable methods",
+    "alternativeName": "Ensure you do file path manipulation without including untrusted data",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66062,
+            "name": "Secure Coding - Input Validation",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCSM-CWE-22",
+            "name": "Path Traversal Improper Input Neutralization",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-22",
+            "name": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-23",
+            "name": "Relative Path Traversal",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-36",
+            "name": "Absolute Path Traversal",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-73",
+            "name": "External Control of File Name or Path",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-AC-3",
+            "name": "Access Enforcement",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-SI-10",
+            "name": "Information Input Validation",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-22",
+            "name": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-23",
+            "name": "Relative Path Traversal",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-36",
+            "name": "Absolute Path Traversal",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A5-2017",
+            "name": "Broken Access Control",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.1",
+            "name": "Injection flaws, particularly SQL injection. Also consider OS Command Injection, LDAP and XPath injection flaws as well as other injection flaws.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.8",
+            "name": "Improper access control (such as insecure direct object references, failure to restrict URL access, directory traversal, and failure to restrict user access to functions).",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.1",
+            "name": "Injection flaws, particularly SQL injection. Also consider OS Command Injection, LDAP and XPath injection flaws as well as other injection flaws.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.8",
+            "name": "Improper access control (such as insecure direct object references, failure to restrict URL access, directory traversal, and failure to restrict user access to functions).",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        98.0,
+        99.0,
+        99.5,
+        99.99
+    ]
+}

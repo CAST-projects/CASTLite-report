@@ -1,0 +1,81 @@
+{
+    "id": 8216,
+    "name": "Avoid using incompatible mutation",
+    "href": "AIP/quality-rules/8216",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Number of violation occurrences",
+    "description": "This rule reports all incorrect numeric type conversions which may produce unexpected results\n\n- int i = (int) 33457.8f; \n- int i1 = 1 + 2+ (int)3.5\n- if(integerValue == (int)floatValue)\n\nA violation is raised if converting from one data type to another, such as long to integer in the data which can be translated in a way that produces unexpected values.",
+    "output": "Associated to each violation, the following information is provided:\n- The number of violation occurrences\n- Bookmarks for violation occurrences found in the source code",
+    "rationale": "The program could wind up using the wrong number and generate incorrect results. If the number is used to allocate resources or make a security decision, then this could introduce a vulnerability.\n - A widening conversion of an int or a long value to float, or of a long value to double, may result in loss of precision - that is, the result may lose some of the least significant bits of the value. In this case, the resulting floating-point value will be a correctly rounded version of the integer value, using IEEE 754 round-to-nearest mode",
+    "reference": "https://cwe.mitre.org/data/definitions/681.html\nhttp://www.informit.com/articles/article.aspx?p=174371",
+    "remediation": "You can use Widening Primitive Conversion to avoid loss of precision.",
+    "remediationSample": "A widening primitive conversion does not lose information about the overall magnitude of a numeric value.\n  byte to short, int, long, float, or double\n    short to int, long, float, or double\n    char to int, long, float, or double\n    int to long, float, or double\n    long to float or double\n    float to double\n-Despite the fact that loss of precision may occur, a widening primitive conversion never results in a run-time exception",
+    "sample": "int i = (int) 33457.8f;\nshort i1 = (short)ic.readdata(); // VIOLATION if readdata returns long\nint i1 = 1 + 2+ (int)3.5 // VIOLATION",
+    "total": "Number of Java artifacts that can reference an incompatible mutation which includes methods, lambdas and constructors",
+    "alternativeName": "Ensure not using incorrect numeric type conversions to avoid data corruption",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66069,
+            "name": "Programming Practices - Unexpected Behavior",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCSM-CWE-681",
+            "name": "Numeric Types Incorrect Conversion",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-681",
+            "name": "Incorrect Conversion between Numeric Types",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-681",
+            "name": "Incorrect Conversion between Numeric Types",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

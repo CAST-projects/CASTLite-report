@@ -1,0 +1,114 @@
+{
+    "id": 8240,
+    "name": "Avoid using unsecured cookie",
+    "href": "AIP/quality-rules/8240",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Call stack from the \"setSecure\" call to the \"addCookie\" target",
+    "description": "The 'Secure' attribute for sensitive cookies in HTTPS sessions is not set, which could cause the user agent to send those cookies in plaintext over an HTTP session. \nUsing the method \"setSecure\" ensures that the session cookie is not visible to an attacker.",
+    "output": "List all methods full name that add cookie to a response object without setting the 'secured' attribute",
+    "rationale": "The secure flag is an option that can be set by the application server when sending a new cookie to the user within an HTTP Response. The purpose of the secure flag is to prevent cookies from being observed by unauthorized parties due to the transmission of a the cookie in clear text. \nTo accomplish this goal, browsers which support the secure flag will only send cookies with the secure flag when the request is going to a HTTPS page. Said in another way, the browser will not send a cookie with the secure flag set over an unencrypted HTTP request. \nBy setting the secure flag, the browser will prevent the transmission of a cookie over an unencrypted channel.",
+    "reference": "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute\nhttps://cwe.mitre.org/data/definitions/614.html\n\nOpen Web Application Security Project (OWASP)\nhttps://www.owasp.org/index.php/Top_10-2017_A3-Sensitive_Data_Exposure",
+    "remediation": "Always set the secure attribute when the cookie should sent via HTTPS only.",
+    "remediationSample": "Cookie c = new Cookie(ACCOUNT_ID, acctID); \nc.setSecure(true); // Compliant Code with secure cookies \nresponse.addCookie(c);",
+    "sample": "Cookie c = new Cookie(ACCOUNT_ID, acctID); // Violation - cookie is not secure \nresponse.addCookie(c);",
+    "total": "Number of methods adding a cookie",
+    "alternativeName": "Ensure you have secured your cookie by enabling 'Secure' attribute",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66062,
+            "name": "Secure Coding - Input Validation",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-614",
+            "name": "Sensitive Cookie in HTTPS Session Without 'Secure' Attribute",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-IA-9",
+            "name": "Service Identification and Authentication",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A3-2017",
+            "name": "Sensitive Data Exposure",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A6-2013",
+            "name": "Sensitive Data Exposure",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.10",
+            "name": "Broken authentication and session management",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.10",
+            "name": "Broken authentication and session management",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "STIG-V4R8",
+            "id": "STIG-V-70203",
+            "name": "The application must set the secure flag on session cookies.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

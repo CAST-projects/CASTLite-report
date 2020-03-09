@@ -1,0 +1,81 @@
+{
+    "id": 8220,
+    "name": "Avoid using deprecated method, constructor, field, type or package",
+    "href": "AIP/quality-rules/8220",
+    "critical": true,
+    "maxWeight": 6,
+    "associatedValueName": "Number of violation occurrences",
+    "description": "A violation is reported if a deprecated class, method, field variable or type used/called in the java code:\n   ",
+    "output": "A violation is reported if a deprecated java entity is used/called by a method, constructor, field or type. \n  ",
+    "rationale": "The purpose is to avoid to use the deprecated  enity as currently good and appropriate new version of the same is available. The deprecated entity may be dropped sometime in near future without any intimation.\n",
+    "reference": "https://stackoverflow.com/questions/9031832/how-to-declare-or-mark-a-java-method-as-deprecated\n             https://stackoverflow.com/questions/14627313/what-does-deprecated-mean-on-method-parameters-and-local-variables\n",
+    "remediation": "Check the documentation of the deprecated entity and avoid not to use the same. Some other way can be approached or new method, type or class can be used instead",
+    "remediationSample": " \n-Sample 1\nprivate void dumpResponse(ServerResponse response) {\n  \n  try {\n    String resp = new String(response.getByteArray());\n    logger.debug(\"Response Dump: \"+resp);\n    response.setResponseStream(new StringBufferInputStream(resp)); // as StringBufferInputStream is Deprecated the preferred way to create a stream from a string is via the StringReader class.\n  } catch (CommunicationException e) {\n    e.printStackTrace();\n  }\n  \n}\n \n---------------------------------------------------------------------------------\npublic class MyTest {\n  \n  public static void main(String[] args) {\n    \n    List list = new List();\n    list.addItem(\"MyItemOne\"); // addItem is deprecated use add\n    list.addItem(\"MyItemTwo\"); // addItem is deprecated use add\n    list.addItem(\"MyItemThree\"); // addItem is deprecated use add\n    \n    list.clear(); // clear is deprecated use removeall\n  }\n}\n\n",
+    "sample": " class Test\n            {\n                public void funUsingDerecatedField()\n                {\n                    value = 10;\n                }\n                @Deprecated\n                int value;\n            }\n            public class DeprecatedUse {\n                public static void main(String[] args) {\n                      Test obj = new Test();\n            obj.funUsingDerecatedField(); // VIOLATION as function using a deprecated field is called\n                }\n            }\n           \n",
+    "total": "Number of Java Artifacts",
+    "alternativeName": "Prefer not using deprecated methods, constructors, fields, type or packages",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66069,
+            "name": "Programming Practices - Unexpected Behavior",
+            "weight": 6,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-477",
+            "name": "Use of Obsolete Function",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-477",
+            "name": "Use of Obsolete Function",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "M7-2016",
+            "name": "Poor Code Quality",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

@@ -1,0 +1,62 @@
+{
+    "id": 4596,
+    "name": "Avoid using 'java.lang.System.getenv()'",
+    "href": "AIP/quality-rules/4596",
+    "critical": false,
+    "maxWeight": 5,
+    "description": "Java artifacts should not use 'java.lang.System.getenv()'",
+    "output": "This report lists all java artifacts using 'java.lang.System.getenv()'.\nIt provides the following information:\n - Artifact full name",
+    "rationale": "For portability reasons, in Web applications, 'java.lang.System.getenv()' should not be used since it means using Operating System variables and therefore being dependent on the environment where the application is deployed.",
+    "remediation": "Prefer using property files.",
+    "total": "Number of Java artifacts",
+    "alternativeName": "Prefer using environment file instead of using java.lang.System.getenv()",
+    "businessCriteria": [
+        {
+            "id": 66032,
+            "name": "Architectural Design",
+            "href": "AIP/business-criteria/66032"
+        },
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61004,
+            "name": "Architecture - OS and Platform Independence",
+            "weight": 5,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

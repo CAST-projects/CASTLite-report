@@ -1,0 +1,80 @@
+{
+    "id": 7204,
+    "name": "Avoid method invocation in a loop termination expression",
+    "href": "AIP/quality-rules/7204",
+    "critical": false,
+    "maxWeight": 8,
+    "description": "Finds all loops (for, while, do while) termination that call a method except the following methods coming from Iterator, ListIterator, Enumeration, StringTokenizer, ResultSet classes:\nfor Java language:\n* java.util.Enumeration.hasMoreElements()\n* java.util.Enumeration.nextElement()\n* java.util.Iterator.hasNext() \n* java.util.Iterator.next() \n* java.util.ListIterator.hasNext() \n* java.util.ListIterator.hasPrevious() \n* java.util.ListIterator.next() \n* java.util.ListIterator.nextIndex() \n* java.util.ListIterator.previous() \n* java.util.ListIterator.previousIndex() \n* java.sql.ResultSet.isAfterLast() \n* java.sql.ResultSet.isBeforeFirst() \n* java.sql.ResultSet.isLast() \n* java.sql.ResultSet.isFirst() \n* java.sql.ResultSet.last() \n* java.sql.ResultSet.next() \n* java.sql.ResultSet.previous()\n* java.util.StringTokenizer.hasMoreElements()\n* java.util.StringTokenizer.hasMoreTokens() \n* java.util.StringTokenizer.nextElement()\n* java.util.StringTokenizer.nextToken() \n\n(Note that the filter applies only on the short name of the method: i.e. for example all method next() will not be reported as a violation even if it does not belongs to java.util.Iterator, java.util.ListIterator or java.sql.ResultSet)\n\nfor C# language:\n* ReadLine\n* Read",
+    "output": "This report lists all methods that call a method in a loop termination (except methods referenced in the description)\nIt provides the following information:\n Method full name",
+    "rationale": "Don't Terminate Loops with Method Calls:\nThe overhead is significant. Not only does the method call come with a considerable cost but depending on the complexity and the performance of the called method the impact on performance can be huge. Indeed, the method can be called several hundred to several thousand times.",
+    "reference": "Java Reference:\nhttp://www.precisejava.com/javaperf/j2se/Loops.htm\nJava Performance Tuning\nBy Jack Shirazi - Publisher : O'Reilly\nISBN 0-596-00377-3\nor http://www.devx.com/tips/Tip/5625\n\nC# Reference:\nhttp://aspalliance.com/818",
+    "remediation": "Use a local variable to store the condition.",
+    "remediationSample": "int length = tab.length();\nfor (int i=0; i < length; i++) { // FIXED\n  tab[i] = i;\n}",
+    "sample": "for (int i=0; i < tab.length();  i++) { // VIOLATION\n  tab[i] = i;\n}",
+    "total": "Number of methods having at least one loop",
+    "alternativeName": "Avoid method invocation in a loop termination expression",
+    "businessCriteria": [
+        {
+            "id": 60014,
+            "name": "Efficiency",
+            "href": "AIP/business-criteria/60014"
+        },
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66068,
+            "name": "Efficiency - Expensive Calls in Loops",
+            "weight": 8,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 0,
+            "name": "ALL TECHNOLOGIES",
+            "href": "AIP/technologies/0"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCPEM-PRF-8",
+            "name": "Control Elements Requiring Significant Resource Element within Control Flow Loop Block",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-1050",
+            "name": "Excessive Platform Resource Consumption within a Loop",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-1050",
+            "name": "Excessive Platform Resource Consumption within a Loop",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

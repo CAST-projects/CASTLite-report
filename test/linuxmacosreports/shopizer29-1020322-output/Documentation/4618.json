@@ -1,0 +1,62 @@
+{
+    "id": 4618,
+    "name": "Avoid instantiating Boolean",
+    "href": "AIP/quality-rules/4618",
+    "critical": false,
+    "maxWeight": 2,
+    "description": "Java artifacts should not instantiate Booleans.\nExample of instantiation:\n'Boolean b = new Boolean();'",
+    "output": "This report lists all java artifacts instantiating a Boolean\nIt provides the following information:\n Artifact full name",
+    "rationale": "Instantiating a Boolean object consumes memory and CPU but does not bring value.",
+    "remediation": "Use Boolean.TRUE or Boolean.FALSE instead.",
+    "total": "Number of Java artifacts",
+    "alternativeName": "Ensure that the boolean are not instantiated",
+    "businessCriteria": [
+        {
+            "id": 60014,
+            "name": "Efficiency",
+            "href": "AIP/business-criteria/60014"
+        },
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61018,
+            "name": "Efficiency - Memory, Network and Disk Space Management",
+            "weight": 2,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

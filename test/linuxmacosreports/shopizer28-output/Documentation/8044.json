@@ -1,0 +1,100 @@
+{
+    "id": 8044,
+    "name": "Avoid log forging vulnerabilities",
+    "href": "AIP/quality-rules/8044",
+    "critical": true,
+    "maxWeight": 8,
+    "associatedValueName": "Call stack from user input source down to the target log method",
+    "description": "This metric uses CAST data-flow engine to detect a call path where input data from the user is written into the application logs without prior validation and sanitization.",
+    "output": "- Method full name\n- Call stack from user input source down to the target log method",
+    "rationale": "Writing unvalidated, unsanitized user input to log files can allow an attacker to forge log entries or inject malicious content into the logs.\n\nApplications typically use log files to store a history of events or transactions for later review, statistics gathering, or debugging. Depending on the nature of the application, the task of reviewing log files may be performed manually or sometimes automated with a tool that automatically gathers log data for important events or trending information. \nInterpretation of the log files may be hindered or misdirected if an attacker can supply data to the application that is subsequently logged verbatim.",
+    "reference": "CWE-117: Improper Output Neutralization for Logs\nhttps://cwe.mitre.org/data/definitions/117.html\n\nOpen Web Application Security Project (OWASP)\nhttps://www.owasp.org/index.php/A6_2004_Injection_Flaws",
+    "remediation": "Use authorized sanitization methods.",
+    "remediationSample": "String val = request.getParameter(\"value\");\ntry {\n    int value = Integer.parseInt(value);\n}\ncatch (NumberFormatException) {\n    String sanitizedValue = ... // Sanitize here the value\n    log.info(\"Failed to parse value = \" + sanitizedValue);\n}",
+    "sample": "String val = request.getParameter(\"value\");\ntry {\n    int value = Integer.parseInt(value);\n}\ncatch (NumberFormatException) {\n    log.info(\"Failed to parse value = \" + value);\n}",
+    "total": "Number of potentially vulnerable methods",
+    "alternativeName": "Ensure when you build a log that accepts a format string as an argument, the argument has been sanitized when it originates from an external source.",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66062,
+            "name": "Secure Coding - Input Validation",
+            "weight": 8,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-117",
+            "name": "Improper Output Neutralization for Logs",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-AU-9",
+            "name": "Protection of Audit Information",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A3-2017",
+            "name": "Sensitive Data Exposure",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A6-2013",
+            "name": "Sensitive Data Exposure",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "STIG-V4R8",
+            "id": "STIG-V-69369",
+            "name": "The application must not write sensitive data into the application logs.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        98.0,
+        99.0,
+        99.5,
+        99.99
+    ]
+}

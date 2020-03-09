@@ -1,0 +1,61 @@
+{
+    "id": 8096,
+    "name": "Avoid testing floating point numbers for equality",
+    "href": "AIP/quality-rules/8096",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Number of violation occurrences",
+    "description": "Reports all equality or inequality operations on floating point variables:\n- float x == (...)\n- float x != (...)\n- double x == (...)\n- double x != (...)\nA violation is raised if one of the operands of the ==/!= operator is a float or a double. The other operand is not considered, it can be another floating point variable, an integer or a boolean.",
+    "output": "Report all artifact that perform float equality comparison. \nIt reports:\n- artifact fullname",
+    "rationale": "Due to rounding errors, most floating-point numbers end up being slightly imprecise. As long as this imprecision stays small, it can usually be ignored. However, it also means that numbers expected to be equal (e.g. when calculating the same result through different correct methods) often differ slightly, and a simple equality test fails.\nA comparison between a floating point number and an integer has the same problem, since the integer is cast into a floating point for the comparison.",
+    "reference": "Java Language Specification > 4.2.4. Floating-Point Operations:\nhttp://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.2.4\nDoubles are not floats, so don't compare them:\nhttp://randomascii.wordpress.com/2012/06/26/doubles-are-not-floats-so-dont-compare-them/\nWhat's wrong with using == to compare floats in Java?\nhttp://stackoverflow.com/questions/1088216/whats-wrong-with-using-to-compare-floats-in-java\nhttp://floating-point-gui.de/errors/comparison/",
+    "remediation": "Except specific cases where we can expect that the value is the same (see http://randomascii.wordpress.com/2012/06/26/doubles-are-not-floats-so-dont-compare-them), the best is to compare the difference with Epsilon a small float number that you can configure according to the accuracy you want.",
+    "remediationSample": "static final float EPSILON = 0.0000001f;\n\nfloat a = 0.15f + 0.15f;\nfloat b = 0.1f + 0.2f;\nif(Math.abs(a - b) < EPSILON) {...} // FIX\nif(Math.abs(a - b) > EPSILON) {...} // FIX",
+    "sample": "float a = 0.15f + 0.15f;\nfloat b = 0.1f + 0.2f;\nif(a == b) {...} // VIOLATION\nif(a != b) {...} // VIOLATION",
+    "total": "Number of artifacts that reference a float",
+    "alternativeName": "Ensure that testing floating point numbers for equality is not used as is source of imprecision",
+    "businessCriteria": [
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66069,
+            "name": "Programming Practices - Unexpected Behavior",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        90.0,
+        95.0,
+        99.0,
+        100.0
+    ]
+}

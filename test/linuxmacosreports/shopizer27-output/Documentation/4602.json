@@ -1,0 +1,83 @@
+{
+    "id": 4602,
+    "name": "Avoid using Fields (non static final) from other Classes",
+    "href": "AIP/quality-rules/4602",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Field full name",
+    "description": "To respect OO encapsulation concepts, Fields should not be accessed from outside the Class without going through their accessors.\nProtected fields are also considered by this rule comptation.Using protected fields is allowed by the Java language but not a good practive as it introduce a hard coupling between implementation and interfaces (abstract class here).\nAs per the book \"Effective Java\" by Joshua Bloch : \"The need for protected members should be relatively rare.\". Fields of an INNER class are considered as internal fields of the outer class and Fields of a Child class (By inheritance) are considered as internal fields of the outer",
+    "output": "This report lists all Methods directly using Fields from other Classes.\nIt provides the following information:\n - Method full name\n - Field full name",
+    "rationale": "On of the fundamental concept of this rule is encapsulation:\nHiding the internals of the object protects its integrity by preventing users from setting the internal data of the component into an invalid or inconsistent state. A benefit of encapsulation is that it can reduce system complexity, and thus increases robustness, by allowing the developer to limit the interdependencies between software components.",
+    "total": "Number of non abstract Java artifacts",
+    "alternativeName": "Ensure not using Fields (non static final) from other Classes to respect OO encapsulation concepts",
+    "businessCriteria": [
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61020,
+            "name": "Programming Practices - Modularity and OO Encapsulation Conformity",
+            "weight": 9,
+            "critical": true
+        },
+        {
+            "id": 66066,
+            "name": "Secure Coding - Encapsulation",
+            "weight": 4,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCMM-MNT-16",
+            "name": "Method Control Element Usage of Member Element from other Class Element",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-1090",
+            "name": "Method Containing Access of a Member Element from Another Class",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-1090",
+            "name": "Method Containing Access of a Member Element from Another Class",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        98.0,
+        99.0,
+        99.5,
+        99.99
+    ]
+}

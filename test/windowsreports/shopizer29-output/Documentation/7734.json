@@ -1,0 +1,112 @@
+{
+    "id": 7734,
+    "name": "Avoid to use Log.debug() without calling Log.isDebugEnabled()",
+    "href": "AIP/quality-rules/7734",
+    "critical": false,
+    "maxWeight": 3,
+    "description": "Reports all methods that call:\n. org.apache.log4j.Category.debug \n  and not org.apache.log4j.Category. isDebugEnabled().\nOr \n. org.apache.commons.logging.Log.debug \n  and not org.apache.commons.logging.Log.isDebugEnabled().\nOr\n. Refers to  java.util.logging.Logger.finest\n  and not call java.util.logging.Logger.isLoggable\n\nTwo thresholds permit to add a list of full qualified debug methods and isDebugEnabled methods name. A debug method name in the list must have its corresponding isDebugEnabled name at the same index.",
+    "output": "This report lists all methods that violate this rule.\nIt provides the following information:\n Method Full Name, the number of call to debug() without a call to  isDebugEnabled()",
+    "rationale": "While disabling debug logging level in production, it still impacts performance of your application because the method invocation involves the hidden cost of parameter construction.\n\nFor example: << cat.debug(\"Entry number: \" + i + \" is \" + String.valueOf(entry[i])) >> incurs the cost of constructing the message parameter that is converting both integer i and entry[i] to a String and concatenating intermediate strings, regardless of whether the message will be logged or not.",
+    "reference": "http://www.javaworld.com/jw-11-2000/jw-1122-log4j.html\nhttp://burtbeckwith.com/blog/?cat=8",
+    "remediation": "Add a if condition with a call to  isDebugEnabled() before calling any .debug().",
+    "remediationSample": "import org.apache.log4j.*;\n\npublic class MyClass {\n    Category cat = Category.getInstance(MyClass.class.getName());\n    String entry [];\n\n    public static void aMethod(int i) {\n\n        if (cat.isDebugEnabled()) { //FIXED\n            cat.debug(\"Entry number: \" + i + \" is \" + String.valueOf(entry[i])); \n        }\n   }",
+    "sample": "import org.apache.log4j.*;\n\npublic class MyClass {\n    Category cat = Category.getInstance(MyClass.class.getName());\n    String entry [];\n\n    public static void aMethod(int i) {\n\n        cat.debug(\"Entry number: \" + i + \" is \" + String.valueOf(entry[i])); // VIOLATION\n   }",
+    "total": "Number of methods that call debug() methods (i.e: org.apache.log4j.Category.debug, org.apache.commons.logging.Log.debug and the debug method list of the threashold)",
+    "alternativeName": "Ensure that debug method invocation is usually preceded by a call to its corresponding isDebugEnabled method",
+    "businessCriteria": [
+        {
+            "id": 60014,
+            "name": "Efficiency",
+            "href": "AIP/business-criteria/60014"
+        },
+        {
+            "id": 20140522,
+            "name": "Green Stuff",
+            "href": "AIP/business-criteria/20140522"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61018,
+            "name": "Efficiency - Memory, Network and Disk Space Management",
+            "weight": 3,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CWE",
+            "id": "CWE-779",
+            "name": "Logging of Excessive Data",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        {
+            "name": "java.util.logging.Logger.finest",
+            "description": "full qualified debug method name",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        "java.util.logging.Logger.isLoggable"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "org.apache.commons.logging.Log.debug",
+            "description": "full qualified debug method name",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        "org.apache.commons.logging.Log.isDebugEnabled"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "org.apache.log4j.Category.debug",
+            "description": "full qualified debug method name",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        "org.apache.log4j.Category.isDebugEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

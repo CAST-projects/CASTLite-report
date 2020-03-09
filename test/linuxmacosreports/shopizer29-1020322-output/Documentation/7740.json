@@ -1,0 +1,128 @@
+{
+    "id": 7740,
+    "name": "Avoid HTTP response splitting",
+    "href": "AIP/quality-rules/7740",
+    "critical": true,
+    "maxWeight": 9,
+    "associatedValueName": "Call stack from user input source down to the target HTML user output method",
+    "description": "The application uses HTTP headers, but it does not correctly neutralizes CR and LF characters before the data is included in outgoing HTTP headers.\n\nUsing CAST data-flow engine, this metric detects paths from user input methods down to HTTP headers usage, paths which are open vulnerabilities.",
+    "output": "List all methods that miss calling the required sanitization method and provides access to the path demonstrating the vulnerability:\n\nIt provides the following information:\n- The full name of the method that calls the user input method. That is the source of the XSS flaw.\n- Call stack from user input source down to the target HTML user output method.",
+    "rationale": "CR and LF characters in an HTTP header may give attackers control of the remaining headers and body of the response the application intends to send, as well as allowing them to create additional responses entirely under their control.",
+    "reference": "CWE-113: Improper Neutralization of CRLF Sequences in HTTP Headers ('HTTP Response Splitting')\nhttps://cwe.mitre.org/data/definitions/113.html\n\nCWE-644: Improper Neutralization of HTTP Headers for Scripting Syntax\nhttps://cwe.mitre.org/data/definitions/644.html\n\nOpen Web Application Security Project (OWASP)\nhttps://www.owasp.org/index.php/Top_10_2007",
+    "remediation": "Use authorized sanitization methods.\n\nTo avoid the creation of XSS flaws, the Open Web Application Security Project (OWASP) recommends both input validation and \"strong output encoding\" or sanitization:\n\"Strong output encoding. Ensure that all user-supplied data is appropriately entity encoded (either HTML or XML depending on the output mechanism) before rendering, taking the approach to encode all characters other than a very limited subset. This is the approach of the Microsoft Anti-XSS library or any valid sanitization libraries. Also, set the character encodings for each page you output, which will reduce exposure to some variants.\"",
+    "remediationSample": "Sample 1\n// include validation code for rawInputData  --> cleanData\nresponse.addHeader(HEADER_NAME, cleanData);\n\n\nSample 2:\nString header = request.getParameter(HEADER_NAME);\n// ...\n// include validation code for header\nCookie cookie = new Cookie(\"header\", header);\nresponse.addCookie(cookie);",
+    "sample": "Sample 1\nresponse.addHeader(HEADER_NAME, rawInputData);\n\nSample 2\nString header = request.getParameter(HEADER_NAME);\n// ...\nCookie cookie = new Cookie(\"header\", header);\nresponse.addCookie(cookie);",
+    "total": "Number of potentially vulnerable methods",
+    "alternativeName": "Avoid HTTP response splitting",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 66062,
+            "name": "Secure Coding - Input Validation",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 138383,
+            "name": "C#",
+            "href": "AIP/technologies/138383"
+        },
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        },
+        {
+            "id": 138385,
+            "name": "VB.NET",
+            "href": "AIP/technologies/138385"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCSM-CWE-79",
+            "name": "Cross-site Scripting Improper Input Neutralization",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-79",
+            "name": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "NIST-SP-800-53R4",
+            "id": "NIST-SI-10",
+            "name": "Information Input Validation",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-79",
+            "name": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A3-2013",
+            "name": "Cross-Site Scripting (XSS)",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OWASP",
+            "id": "A7-2017",
+            "name": "Cross-Site Scripting (XSS)",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-6.5.7",
+            "name": "  Cross-site scripting (XSS)",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-6.5.7",
+            "name": "  Cross-site scripting (XSS)",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "STIG-V4R8",
+            "id": "STIG-V-70257",
+            "name": "The application must protect from Cross-Site Scripting (XSS) vulnerabilities.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        98.0,
+        99.0,
+        99.5,
+        99.99
+    ]
+}

@@ -1,0 +1,1 @@
+{"file":"./test/sources/shopizer-2.9.0/sm-shop/src/main/webapp/resources/smart-client/skins/EnterpriseBlue/load_skin.js","ViolationList":[{"ViolationName":"Avoid large Artifacts - too many Lines of Code","ViolationId":7842,"hrefDoc":"/Documentation/7842.json","ViolationsCount":1,"Violations":[{"ID":424,"bookmarks":[{"lineStart":7,"colStart":16,"lineEnd":8,"colEnd":1}]}]}]}

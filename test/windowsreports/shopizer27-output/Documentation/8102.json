@@ -1,0 +1,111 @@
+{
+    "id": 8102,
+    "name": "Avoid hardcoded network resource names (JEE)",
+    "href": "AIP/quality-rules/8102",
+    "critical": false,
+    "maxWeight": 7,
+    "associatedValueName": "Number of violation occurrences",
+    "description": "This quality rule reports all artifacts that contain hardcoded: \n\n- URLs (of the form file:///c:/Tmp/Folder/ or http://host.com/folder) \n- Paths (Windows absolute paths of the form c:\\Tmp\\Folder) \n- JDBC URL (of the form jdbc:oracle:thin:@//myhost:1521/orcl) \n- IP addresses (IPv4 format like 0.0.0.0 to 255.255.255.255) \n- JNDI lookup path \n\nNote: This quality rule implements the rule ASCRM-RLB-18 of the CISQ standard.\n",
+    "output": "List all artifacts that reference hard coded IP adresses, URL, paths\nIt provides the following information: \n - Artifact full name",
+    "rationale": "Built-in remote addresses cause problems when the target is moved. Avoid of hardcoded network resources (e.g., IP addresses, URLs, etc.)",
+    "reference": "ASCRM 1.0, Automated Source Code Reliability Measure, Object Management Group.",
+    "total": "Number of Java Artifacts",
+    "alternativeName": "Ensure not having hardcoded network resources names in the source files (JEE)",
+    "businessCriteria": [
+        {
+            "id": 66032,
+            "name": "Architectural Design",
+            "href": "AIP/business-criteria/66032"
+        },
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60016,
+            "name": "Security",
+            "href": "AIP/business-criteria/60016"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61004,
+            "name": "Architecture - OS and Platform Independence",
+            "weight": 7,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCRM-RLB-18",
+            "name": "Storable and Member Data Element Initialization with Hard-Coded Network Resource Configuration Data",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-1051",
+            "name": "Initialization with Hard-Coded Network Resource Configuration Data",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-1051",
+            "name": "Initialization with Hard-Coded Network Resource Configuration Data",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-1.3.8",
+            "name": "Do not disclose private IP addresses and routing information to unauthorized parties.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.1",
+            "id": "PCI-Requirement-2.2.4",
+            "name": "Configure system security parameters to prevent misuse.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-1.3.8",
+            "name": "Do not disclose private IP addresses and routing information to unauthorized parties.",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "PCI-DSS-V3.2.1",
+            "id": "PCI-Requirement-2.2.4",
+            "name": "Configure system security parameters to prevent misuse.",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        90.0,
+        95.0,
+        99.0,
+        100.0
+    ]
+}

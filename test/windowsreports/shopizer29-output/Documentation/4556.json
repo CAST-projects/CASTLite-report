@@ -1,0 +1,76 @@
+{
+    "id": 4556,
+    "name": "Avoid large Classes - too many Constructors (JEE)",
+    "href": "AIP/quality-rules/4556",
+    "critical": false,
+    "maxWeight": 4,
+    "associatedValueName": "Number of Constructors",
+    "description": "Classes should have less than X Constructors.\nThe threshold is a parameter and can be changed at will.",
+    "output": "This report lists all the Classes having more than X Constructors.\nIt provides the following information:\n - Class full name\n - Number of Constructors",
+    "rationale": "For maintainability and readability reasons, Classes should not have too many Constructors.",
+    "remediation": "Review the Class design to reduce the number of Constructors",
+    "total": "Number of Java classes",
+    "alternativeName": "Ensure you review the Class design to reduce the number of Constructors",
+    "businessCriteria": [
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60011,
+            "name": "Transferability",
+            "href": "AIP/business-criteria/60011"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61010,
+            "name": "Complexity - OO Inheritance and Polymorphism",
+            "weight": 4,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        {
+            "name": "Maximum constructor count per class",
+            "description": "Maximum constructor count per class",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        4
+                    ]
+                }
+            ]
+        }
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

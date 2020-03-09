@@ -1,0 +1,71 @@
+{
+    "id": 4554,
+    "name": "Avoid large Classes - too many Methods (JEE)",
+    "href": "AIP/quality-rules/4554",
+    "critical": false,
+    "maxWeight": 5,
+    "associatedValueName": "Number of Methods",
+    "description": "Classes should have less than X Methods.\nThe threshold is a parameter and can be changed at will.",
+    "output": "This report lists all the Classes having more than X Methods.\nIt provides the following information:\n - Class full name\n - Number of Methods",
+    "rationale": "For maintainability and readability reasons, Classes should not have too many Methods.",
+    "remediation": "Review the Class design to reduce the number of Methods",
+    "total": "Number of methods",
+    "alternativeName": "Ensure you review the Class design to reduce the number of Methods",
+    "businessCriteria": [
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60011,
+            "name": "Transferability",
+            "href": "AIP/business-criteria/60011"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61022,
+            "name": "Volume - Number of Components",
+            "weight": 5,
+            "critical": false
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        
+    ],
+    "parameters": [
+        {
+            "name": "Maximum method count per class",
+            "description": "Max method count per class",
+            "technologies": [
+                {
+                    "id": 0,
+                    "name": "ALL TECHNOLOGIES",
+                    "href": "AIP/technologies/0",
+                    "values": [
+                        30
+                    ]
+                }
+            ]
+        }
+    ],
+    "thresholds": [
+        50.0,
+        90.0,
+        95.0,
+        99.0
+    ]
+}

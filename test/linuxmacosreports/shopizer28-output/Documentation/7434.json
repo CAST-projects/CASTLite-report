@@ -1,0 +1,92 @@
+{
+    "id": 7434,
+    "name": "Avoid classes overriding only equals() or only hashCode()",
+    "href": "AIP/quality-rules/7434",
+    "critical": true,
+    "maxWeight": 9,
+    "description": "Report all classes that override only boolean equals(Object) or only int hashCode()",
+    "output": "This report lists all classes that implement only equals() or only hashCode()\nIt provides the following information:\n  Class full name",
+    "rationale": "Often classes are used in HashMap to provide an efficient storage and retrieval. The Java platform architects anticipated the importance of hash-based collection classes -- such as Hashtable, HashMap, and HashSet -- in typical Java applications, and comparing against many objects with equals() can be computationally expensive.\nIf your java class is used or can be used in a hash-based collection, override both of these methods to avoid any issues that can be painful to find when the issue appear in production because the error is not in the code that is present, but in the code that is absent.",
+    "reference": "http://www-128.ibm.com/developerworks/java/library/j-jtp05273.html",
+    "remediation": "Override both methods.",
+    "remediationSample": "class Example {\n   int id;\n\n   public int getId() {\n      return id;\n   }\n    public boolean equals(Object obj) { \n         return (obj instanceof Example \n            && id == ((Example) obj).getId()); \n   }\n   public int hashCode() {  // FIXED\n       return id/10;\n   }\n}",
+    "sample": "class Example {\n   int id;\n\n   public int getId() {\n      return id;\n   }\n    public boolean equals(Object obj) { \n         return (obj instanceof Example \n            && id == ((Example) obj).getId()); \n   }\n       // VIOLATION: missing hashCode()\n}",
+    "total": "Number of classes that override equals() or (not exclusive) hashCode()",
+    "alternativeName": "Ensure to overrides equals() and hashCode()",
+    "businessCriteria": [
+        {
+            "id": 60012,
+            "name": "Changeability",
+            "href": "AIP/business-criteria/60012"
+        },
+        {
+            "id": 66031,
+            "name": "Programming Practices",
+            "href": "AIP/business-criteria/66031"
+        },
+        {
+            "id": 60013,
+            "name": "Robustness",
+            "href": "AIP/business-criteria/60013"
+        },
+        {
+            "id": 60011,
+            "name": "Transferability",
+            "href": "AIP/business-criteria/60011"
+        }
+    ],
+    "technicalCriteria": [
+        {
+            "id": 61010,
+            "name": "Complexity - OO Inheritance and Polymorphism",
+            "weight": 9,
+            "critical": true
+        }
+    ],
+    "technologies": [
+        {
+            "id": 140029,
+            "name": "JEE",
+            "href": "AIP/technologies/140029"
+        }
+    ],
+    "qualityStandards": [
+        {
+            "standard": "CISQ",
+            "id": "ASCRM-RLB-4",
+            "name": "Persistant Storable Data Element without Proper Comparison Control Element",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-581",
+            "name": "Object Model Violation: Just One of Equals and Hashcode Defined",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "CWE",
+            "id": "CWE-1097",
+            "name": "Persistent Storable Data Element without Associated Comparison Control Element",
+            "url": null,
+            "description": null
+        },
+        {
+            "standard": "OMG-ASCQM",
+            "id": "CWE-1097",
+            "name": "Persistent Storable Data Element without Associated Comparison Control Element",
+            "url": null,
+            "description": null
+        }
+    ],
+    "parameters": [
+        
+    ],
+    "thresholds": [
+        98.0,
+        99.0,
+        99.5,
+        99.99
+    ]
+}

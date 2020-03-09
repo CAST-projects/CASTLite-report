@@ -1,17 +1,24 @@
 {
-    "name": "ReportMaker",
-    "version": "1.0.0",
-    "description": "CARL report marker based on JSON output",
-	"main":"reportmaker.js",
-	"bin":"reportmaker.js",
-	"author":"Guillaume Rager",
-    "license": "MIT",
-    "repository": "https://github.com/CAST-projects/CASTLite-report",
-    "dependencies": {
-        "pdfjs": "~2.3",
-        "pkg": "^4.4.3"
-    },
-	"pkg": {
-        "scripts": "templates/*.js"
-    } 
+  "name": "ReportMaker",
+  "version": "1.0.0",
+  "description": "CARL report marker based on JSON output",
+  "main": "reportmaker.js",
+  "bin": "reportmaker.js",
+  "author": "Guillaume Rager",
+  "license": "MIT",
+  "repository": "https://github.com/CAST-projects/CASTLite-report",
+  "dependencies": {
+    "pdfjs": "~2.3",
+    "pkg": "^4.4.3"
+  },
+  "pkg": {
+    "scripts": "templates/*.js"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^7.1.0"
+  }
 }
