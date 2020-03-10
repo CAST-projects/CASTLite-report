@@ -308,6 +308,7 @@ const fonts = {
 
 const paddingOptions = { paddingBottom: 0.5*pdf.cm, paddingTop: 0.5*pdf.cm };
 const paddingBottomOptions = { paddingBottom: 0.5*pdf.cm };
+const codeOptions = {font: fonts.Courier };
 
 const h1 = { fontSize: 18, font: fonts.HelveticaBold };
 const h2 = { fontSize: 16, font: fonts.HelveticaBold };
@@ -512,12 +513,6 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
     }
     else {
 
-      /*Object.entries(allBookmarksByRuleId).forEach((bookmark, i) => {
-
-        //console.log(bookmark);
-
-      });*/
-
       //console.log(currentRuleIdsWithViolations);
 
       currentRuleIdsWithViolations.forEach((ruleid, i) => {
@@ -527,6 +522,9 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
         if(isHTML) {
           doc.write("<p>"+ruleid+" - Details</p>");
+        }
+        else {
+          doc.text(ruleid+" - Details",h4);
         }
 
         var allQRBookmarks = allBookmarksByRuleId[ruleid];
@@ -560,7 +558,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
                   theline = theline.substring(0,6*(i==0)+colEnd)+"!/MARK!"+theline.substring(6*(i==0)+colEnd);
                 }
 
-                console.log("BEFORE:"+theline);
+                //console.log("BEFORE:"+theline);
 
                 theline = theline.replace(new RegExp('\t','g'),'    ');
                 theline = theline.replace(new RegExp('<','g'),'&lt;');
@@ -568,7 +566,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
                 theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
                 theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');
 
-                console.log("AFTER:"+theline);
+                //console.log("AFTER:"+theline);
 
                 doc.write("<b>"+thelineindex+"</b>:"+theline);
               });
@@ -576,124 +574,47 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
               doc.write("</code>");
             }
             else {
-              doc.text(bookmark);
+              doc.text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
+
+              allCodes.forEach((thecode, i) => {
+
+                var thelineindex = thecode[0];
+                var theline = thecode[1];
+                const colStart = parseInt(bookmark["colStart"]);
+                const colEnd = parseInt(bookmark["colEnd"]);
+
+                doc.cell(paddingOptions).text(thelineindex+":"+theline,codeOptions);
+
+
+                if((i==0) && (i==(allCodes.length-1))) {
+
+                  doc.cell(paddingOptions).text(codeOptions).add(thelineindex+":").add(theline.substring(0,colStart)).add(theline.substring(colStart,colEnd), { color: 0xCC0000 }).add(theline.substring(colEnd));
+                }
+                else if(i==0) {
+                  doc.cell(paddingOptions).text(codeOptions).add(thelineindex+":").add(theline.substring(0,colStart)).add(theline.substring(colStart),{ color: 0xCC0000 });
+                }
+                else if(i==(allCodes.length-1)) {
+                  doc.cell(paddingOptions).text(codeOptions).add(thelineindex+":").add(theline.substring(0,colEnd),{ color: 0xCC0000 }).add(theline.substring(colEnd));
+                }
+
+                //console.log("BEFORE:"+theline);
+
+                /*theline = theline.replace(new RegExp('\t','g'),'    ');
+                theline = theline.replace(new RegExp('<','g'),'&lt;');
+                theline = theline.replace(new RegExp('>','g'),'&gt;');
+                theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
+                theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');*/
+
+                //console.log("AFTER:"+theline);
+
+                //doc.text(thelineindex+":"+theline);
+              });
             }
           });
         }
       });
-
-
-
-      // check data flow rule first
-      /*byQRsDFData.forEach( (theQR,index) => {
-
-        if(currentRuleIdsWithViolations.includes(theQR["ViolationId"])) {
-          console.log("DF -"+theQR["ViolationName"]+" - "+theQR["ViolationId"]);
-          if(isHTML) {
-
-          }
-          else {
-
-            doc.text("Details of "+theQR["ViolationId"] + ' | '+theQR["ViolationName"]);
-          }
-        }
-      });*/
-
-      // then we can add the violation bookmarks
-      byQRsData.forEach( (theFile,index) => {
-
-        const theQRs = theFile["ViolationList"];
-        const theFilePath = theFile["file"];
-        var alreadyPrinted = 0;
-        //console.log(theQRs);
-
-        theQRs.forEach((theQR, i) => {
-
-          if(currentRuleIdsWithViolations.includes(theQR["ViolationId"])) {
-
-            console.log(theQR["ViolationName"]+" - "+theQR["ViolationId"]);
-
-            if(isHTML) {
-
-              if(alreadyPrinted==0) {
-
-                doc.write("<p><b>"+theFilePath+"</b></p>");
-                alreadyPrinted = 1;
-              }
-
-              doc.write("<p>"+theQR["ViolationId"]+ ' | '+theQR["ViolationName"]+"</p>");
-            }
-            else {
-              if(alreadyPrinted==0) {
-
-                doc.text(theFilePath);
-                alreadyPrinted = 1;
-              }
-
-              doc.text("Details of "+theQR["ViolationId"] + ' | '+theQR["ViolationName"]);
-            }
-            var listOfViolations = theQR["Violations"];
-            var listindex;
-
-            for(listindex=0; listindex<listOfViolations.length; listindex++)
-            {
-              var allCodes = allBookmarks[listindex];
-              var bookmarks = listOfViolations[listindex]["bookmarks"];
-              if(isHTML) {
-                doc.write("<ul>");
-              }
-              bookmarks.forEach ((bookmark,index) => {
-
-                if(isHTML) {
-
-                  doc.write("<li>Bookmark starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and finishes at line:"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
-                  doc.write("<code>");
-                  allCodes.forEach((thecode, i) => {
-                    doc.write(thecode);
-                  });
-                  doc.write("</code>");
-                  doc.write("</li>");
-
-                }
-                else {
-
-                  doc.text(bookmark["file"]);
-                  doc.text("Bookmark starts at line: "+bookmark["lineStart"]+"("+bookmark["colStart"]+") and finishes at line:"+bookmark["lineEnd"]+"("+bookmark["colEnd"]+")",paragraphFormat);
-
-                  /*try {
-                    var myInterface = readline.createInterface({
-                        input: fs.createReadStream(path.join(bookmark["file"]))
-                    });
-                  }
-                  catch(error) {
-                    console.log("Error:"+error+"with the file "+file);
-                  }
-
-                    var lineno = 0;
-                    myInterface.on('line', function (line) {
-                      lineno++;
-                      if(lineno == bookmark["lineStart"]) {
-                        doc.text(line);
-                      }
-                      console.log('Line number ' + lineno + ': ' + line);
-                    });*/
-                }
-                //console.log(bookmark["file"]+" | "+bookmark["lineStart"]+" | "+bookmark["colStart"]+" | "+bookmark["lineEnd"]+" | "+bookmark["colEnd"])
-
-              });
-
-              if(isHTML) {
-                doc.write("</ul>");
-              }
-            }
-          }
-        });
-      });
     }
   });
-
-
-
 }
 
 function generateBasicReport() {
