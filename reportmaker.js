@@ -309,6 +309,7 @@ const fonts = {
 const paddingOptions = { paddingBottom: 0.5*pdf.cm, paddingTop: 0.5*pdf.cm };
 const paddingBottomOptions = { paddingBottom: 0.5*pdf.cm };
 const codeOptions = {font: fonts.Courier };
+const bookmarkOptions = { color: 0xCC0000 };
 
 const h1 = { fontSize: 18, font: fonts.HelveticaBold };
 const h2 = { fontSize: 16, font: fonts.HelveticaBold };
@@ -521,10 +522,10 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
 
         if(isHTML) {
-          doc.write("<p>"+ruleid+" - Details</p>");
+          doc.write("<p><b>"+ruleid+" - Details</b></p>");
         }
         else {
-          doc.text(ruleid+" - Details",h4);
+          doc.cell(paddingOptions).text(ruleid+" - Details",h4);
         }
 
         var allQRBookmarks = allBookmarksByRuleId[ruleid];
@@ -583,18 +584,19 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
                 const colStart = parseInt(bookmark["colStart"]);
                 const colEnd = parseInt(bookmark["colEnd"]);
 
-                doc.cell(paddingOptions).text(thelineindex+":"+theline,codeOptions);
+                // comparison with prebuilt line
+                //doc.cell(paddingOptions).text(thelineindex+":"+theline,codeOptions);
 
 
                 if((i==0) && (i==(allCodes.length-1))) {
 
-                  doc.cell(paddingOptions).text(codeOptions).add(thelineindex+":").add(theline.substring(0,colStart)).add(theline.substring(colStart,colEnd), { color: 0xCC0000 }).add(theline.substring(colEnd));
+                  doc.cell(paddingOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
                 }
                 else if(i==0) {
-                  doc.cell(paddingOptions).text(codeOptions).add(thelineindex+":").add(theline.substring(0,colStart)).add(theline.substring(colStart),{ color: 0xCC0000 });
+                  doc.cell(paddingOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
                 }
                 else if(i==(allCodes.length-1)) {
-                  doc.cell(paddingOptions).text(codeOptions).add(thelineindex+":").add(theline.substring(0,colEnd),{ color: 0xCC0000 }).add(theline.substring(colEnd));
+                  doc.cell(paddingOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
                 }
 
                 //console.log("BEFORE:"+theline);
@@ -809,7 +811,7 @@ function setupDocument() {
     const logoImgCast = new pdf.Image(logocast);
 
     var cell = doc.cell({ paddingBottom: 0.5*pdf.cm })
-    cell.image(logoImgCast, { height: 0.25*pdf.cm , align: 'right'})
+    cell.image(logoImgCast, { height: 0.70*pdf.cm , align: 'right'})
 
     cell.text(applicationSummary["Application Name"], h1)
     //cell.text.br()
