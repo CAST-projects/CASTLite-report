@@ -103,12 +103,97 @@ let readInterfaceFilePaths = [];
 let allScannedFiles = [];
 
 let closedInterfaces = 0;
+let allBookmarksByRuleId = {};
+
+const resultsByFilePath = path.join(input+"/resultByQualityRule")
+files = fs.readdirSync(resultsByFilePath);
+
+
+files.forEach(function(file) {
+
+  // let scan file by file and regroup the information by rule id for rendering
+  //
+  // rule id => file => (primary) bookmarks -> associated bookmarks
+
+  let byQRResults;
+
+  try {
+
+    console.log("resultByQualityRule start parsing "+file);
+
+    let byFileRawdata = fs.readFileSync(path.join(resultsByFilePath,file));
+    byQRResults = JSON.parse(byFileRawdata);
+  }
+  catch(error) {
+
+      console.log("Cannot parse "+file+ " as json...");
+      //console.error(error);
+      //process.exit(1);
+  }
+
+  if(byQRResults) {
+
+    //console.log(file+" : investigate the results...");
+
+    var violationList = byQRResults["ViolationList"];
+    violationList.forEach((item, i) => {
+
+        if(item["ViolationId"]) {
+          var bookmarks = [];
+
+          if(Object.keys(allBookmarksByRuleId).indexOf(item["ViolationId"])!=-1) {
+            bookmarks = allBookmarksByRuleId[item["ViolationId"]];
+          }
+          else {
+            allBookmarksByRuleId[item["ViolationId"]] = bookmarks;
+          }
+
+          var violations = item["Violations"];
+          violations.forEach((violationitem, i) => {
+
+            var violationbookmarks = violationitem["bookmarks"];
+            //console.log("adding "+violationbookmarks.length+" bookmarks");
+
+            violationbookmarks.forEach((violationbookmark, i) => {
+
+              //console.log("file:"+violationbookmark["file"]);
+              // bookmark structure
+              // lineStart colStart
+              // lineEnd colEnd
+              bookmarks.push({"file":violationbookmark["file"],"bookmark":violationbookmark,"associatedbookmark":0,"codes":[]});
+
+              //console.log(typeof violationbookmark["file"]);
+
+              if(allScannedFiles.indexOf(violationbookmark["file"])==-1) {
+
+                //console.log("BEFORE:"+violationbookmark["file"]);
+                allScannedFiles.push(violationbookmark["file"])
+              }
+            });
+
+            // manage associated bookmark
+            /*var associatedviolationbookmarks = violationitem["associated-bookmarks"];
+            if(associatedviolationbookmarks) {
+              console.log(associatedviolationbookmarks);
+              associatedviolationbookmarks.forEach((violationbookmark, i) => {
+
+                // assoicated  bookmark flag
+                // file reference
+                bookmarks.push({"file":violationbookmark["associated-bookmark-file-name"],"associatedbookmark":1,"codes":[],"ID":violationitem["ID"]});
+              });
+            }*/
+      });
+      }
+    });
+  }
+});
+
+if(0) {
 
 
 const resultsByFilePath = path.join(input+"/resultByFile")
 files = fs.readdirSync(resultsByFilePath);
 
-let allBookmarksByRuleId = {};
 
 files.forEach(function(file) {
 
@@ -182,10 +267,15 @@ files.forEach(function(file) {
   }
 });
 
-console.log(allBookmarksByRuleId);
+}
 
 
-allScannedFiles.forEach(function(thefile) {
+
+//console.log(allBookmarksByRuleId);
+
+//console.log("let scan the files to get the bookmarks from "+allScannedFiles);
+
+allScannedFiles.forEach((thefile,i) => {
 
     //process.exit(1);
 
@@ -194,10 +284,14 @@ allScannedFiles.forEach(function(thefile) {
     try {
       // we are going to scan the file and keep the bookmarked code
 
+      if(thefile.startsWith('[') && thefile.endsWith(']')) {
+        thefile = thefile.slice(1,-1);
+      }
+
+      //console.log(thefile);
+
       readInterface = readline.createInterface({
-        input: fs.createReadStream(thefile),
-//        output: process.stdout,
-//        console: false
+        input: fs.createReadStream(thefile)
       });
 
       readInterfaces.push(readInterface);
@@ -211,7 +305,6 @@ allScannedFiles.forEach(function(thefile) {
     //console.log("readInterfaceIndexes:"+readInterfaceIndexes.length);
 
     //process.exit(1)
-
     readInterface.on('line', function(line) {
 
       var interfaceIndex = readInterfaces.indexOf(readInterface);
@@ -234,8 +327,7 @@ allScannedFiles.forEach(function(thefile) {
           if(bookmarkfile["file"]===filepath) {
             var associated = bookmarkfile["associatedbookmark"];
 
-            if(associated == 0)
-            {
+            if(associated == 0) {
               var realBookmark = bookmarkfile["bookmark"];
 
               if((lineindex >= realBookmark["lineStart"]) && (lineindex <= realBookmark["lineEnd"])) {
@@ -300,9 +392,12 @@ tbody tr { \
     color: #101010; \
     line-height: 1.2; \
     font-weight: unset; \
-code { \
-  background-color: #EEF3FB; \
-  margin: 8px; }\
+}\
+code { padding: 8px; font-size: 13px; line-height: 1.4;}\
+.codetable { display: inline-block; width: 100%; background-color: #EEEEEE;} \
+.codetablerow { display: inline-block; width: 100%;} \
+.codetablelineindexcell {  text-align: right;  line-height: 1.4; width: 60px; float: left; font-size: 13px; background-color: #333333; color: white; padding-right: 4px;} \
+.codetablelinecell {  text-align: left; float: left; }\
 }";
 
 const fonts = {
@@ -560,7 +655,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
               if(isHTML) {
               doc.write("<p>");
               doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
-              doc.write("</p><code>");
+              doc.write("</p><div class='codetable'>");
 
               allCodes.forEach((thecode, i) => {
 
@@ -571,26 +666,30 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
                   const colStart = parseInt(bookmark["colStart"]);
                   theline = theline.substring(0,colStart)+"!MARK!"+theline.substring(colStart);
                 }
+                else {
+                  theline = "!MARK!"+theline;
+                }
 
                 if(i==(allCodes.length-1)) {
                   const colEnd = parseInt(bookmark["colEnd"]);
                   theline = theline.substring(0,6*(i==0)+colEnd)+"!/MARK!"+theline.substring(6*(i==0)+colEnd);
                 }
+                else {
+                  theline = theline+"!/MARK!";
+                }
 
                 //console.log("BEFORE:"+theline);
 
-                theline = theline.replace(new RegExp('\t','g'),'    ');
+                theline = theline.replace(new RegExp('\t','g'),'&nbsp;');
                 theline = theline.replace(new RegExp('<','g'),'&lt;');
                 theline = theline.replace(new RegExp('>','g'),'&gt;');
                 theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
                 theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');
 
-                //console.log("AFTER:"+theline);
-
-                doc.write("<b>"+thelineindex+"</b>:"+theline);
+                doc.write("<div class='codetablerow'><div class='codetablelineindexcell'>"+thelineindex+"</div><div class='codetablelinecell'><code>"+theline+"</code></div></div>");
               });
 
-              doc.write("</code>");
+              doc.write("</div>");
             }
               else {
               doc.text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
@@ -844,7 +943,7 @@ function setupDocument() {
     doc = fs.createWriteStream(output);
 
     // common part
-    doc.write("<html><head><style>"+stylecss+"</style></head></body>");
+    doc.write("<html><head><style>"+stylecss+"</style></head><body>");
 
   /*  const logocast = fs.readFileSync('cast.jpg');
     const logoImgCast = new pdf.Image(logocast);
