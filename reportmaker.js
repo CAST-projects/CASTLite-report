@@ -105,9 +105,71 @@ let allScannedFiles = [];
 let closedInterfaces = 0;
 let allBookmarksByRuleId = {};
 
+const resultsWithPath = path.join(input+"/resultWithPath")
+files = fs.readdirSync(resultsWithPath);
+
+files.forEach(function(file) {
+
+   let byQRResults;
+
+    try {
+
+      console.log("resultWithPath start parsing "+file);
+
+      let byFileRawdata = fs.readFileSync(path.join(resultsWithPath,file));
+      byQRResults = JSON.parse(byFileRawdata);
+    }
+    catch(error) {
+
+        console.log("Cannot parse "+file+ " as json...");
+        //console.error(error);
+        //process.exit(1);
+    }
+
+    if(byQRResults) {
+
+        if(byQRResults["ViolationId"]) {
+          var bookmarks = [];
+
+          var violationbookmarks = byQRResults["bookmarks"];
+          //console.log("adding "+violationbookmarks.length+" bookmarks");
+
+          violationbookmarks.forEach((violationbookmark, i) => {
+
+              bookmarks.push({"file":violationbookmark["path"],"ID":byQRResults["ID"],"bookmark":violationbookmark,"step":violationbookmark["step"],"codes":[]});
+
+            if(allScannedFiles.indexOf(violationbookmark["path"])==-1) {
+
+              //console.log("BEFORE:"+violationbookmark["file"]);
+              allScannedFiles.push(violationbookmark["path"])
+            }
+          });
+
+          var existingbookmarks = []
+
+          try {
+            existingbookmarks = allBookmarksByRuleId[byQRResults["ViolationId"]];
+          }
+          catch(error) {
+
+          }
+          if(existingbookmarks) {
+            if(existingbookmarks.length > 0) {
+              bookmarks = existingbookmarks.concat(bookmarks)
+            }
+          }
+
+          allBookmarksByRuleId[byQRResults["ViolationId"]] = bookmarks;
+
+          if(byQRResults["ViolationId"]=="7740") {
+            console.log(allBookmarksByRuleId[byQRResults["ViolationId"]]);
+          }
+        }
+    }
+});
+
 const resultsByFilePath = path.join(input+"/resultByQualityRule")
 files = fs.readdirSync(resultsByFilePath);
-
 
 files.forEach(function(file) {
 
@@ -188,92 +250,7 @@ files.forEach(function(file) {
   }
 });
 
-if(0) {
-
-
-const resultsByFilePath = path.join(input+"/resultByFile")
-files = fs.readdirSync(resultsByFilePath);
-
-
-files.forEach(function(file) {
-
-  // let scan file by file and regroup the information by rule id for rendering
-  //
-  // rule id => file => (primary) bookmarks -> associated bookmarks
-
-  let byQRResults;
-
-  try {
-
-    console.log("start parsing "+file);
-
-    let byFileRawdata = fs.readFileSync(path.join(resultsByFilePath,file));
-    byQRResults = JSON.parse(byFileRawdata);
-  }
-  catch(error) {
-
-      console.log("Cannot parse "+file+ " as json...");
-      //console.error(error);
-      //process.exit(1);
-  }
-
-  if(byQRResults) {
-
-    console.log(file+" : investigate the results...");
-
-    var violationList = byQRResults["ViolationList"];
-    violationList.forEach((item, i) => {
-
-      var bookmarks = [];
-
-      if(Object.keys(allBookmarksByRuleId).indexOf(item["ViolationId"])!=-1) {
-        bookmarks = allBookmarksByRuleId[item["ViolationId"]];
-      }
-      else {
-        allBookmarksByRuleId[item["ViolationId"]] = bookmarks;
-      }
-
-      var violations = item["Violations"];
-      violations.forEach((violationitem, i) => {
-
-        var violationbookmarks = violationitem["bookmarks"];
-        console.log("adding "+violationbookmarks.length+" bookmarks");
-
-        violationbookmarks.forEach((violationbookmark, i) => {
-
-          // bookmark structure
-          // lineStart colStart
-          // lineEnd colEnd
-          bookmarks.push({"file":byQRResults["file"],"bookmark":violationbookmark,"associatedbookmark":0,"codes":[],"ID":violationitem["ID"]});
-
-          if(allScannedFiles.indexOf(byQRResults["file"])==-1) {
-            allScannedFiles.push(byQRResults["file"])
-          }
-        });
-
-        // manage associated bookmark
-        var associatedviolationbookmarks = violationitem["associated-bookmarks"];
-        if(associatedviolationbookmarks) {
-          console.log(associatedviolationbookmarks);
-          associatedviolationbookmarks.forEach((violationbookmark, i) => {
-
-            // assoicated  bookmark flag
-            // file reference
-            bookmarks.push({"file":violationbookmark["associated-bookmark-file-name"],"associatedbookmark":1,"codes":[],"ID":violationitem["ID"]});
-          });
-        }
-      });
-    });
-  }
-});
-
-}
-
-
-
-//console.log(allBookmarksByRuleId);
-
-//console.log("let scan the files to get the bookmarks from "+allScannedFiles);
+console.log("let scan the files to get the bookmarks from "+allScannedFiles.length+" file(s)");
 
 allScannedFiles.forEach((thefile,i) => {
 
@@ -325,11 +302,27 @@ allScannedFiles.forEach((thefile,i) => {
           //console.log(bookmarkfile["file"]);
 
           if(bookmarkfile["file"]===filepath) {
-            var associated = bookmarkfile["associatedbookmark"];
 
-            if(associated == 0) {
+            if(Object.keys(bookmarkfile).indexOf("associatedbookmark")!=-1)
+            {
+              var associated = bookmarkfile["associatedbookmark"];
+              if(associated == 0) {
+                var realBookmark = bookmarkfile["bookmark"];
+
+                if((lineindex >= realBookmark["lineStart"]) && (lineindex <= realBookmark["lineEnd"])) {
+
+                  bookmarkfile["codes"].push([lineindex,line]);
+                }
+              }
+              else {
+
+              }
+            }
+            else if(Object.keys(bookmarkfile).indexOf("step")!=-1) {
+
+              var step = bookmarkfile["step"];
+
               var realBookmark = bookmarkfile["bookmark"];
-
               if((lineindex >= realBookmark["lineStart"]) && (lineindex <= realBookmark["lineEnd"])) {
 
                 bookmarkfile["codes"].push([lineindex,line]);
@@ -351,6 +344,8 @@ allScannedFiles.forEach((thefile,i) => {
         //console.log(allBookmarksByRuleId);
 
         console.log("allBookmarks:"+Object.keys(allBookmarksByRuleId).length);
+
+        console.log(allBookmarksByRuleId['7740']);
 
         // start the document here
 
@@ -641,20 +636,45 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
         var allQRBookmarks = allBookmarksByRuleId[ruleid];
 
-        //console.log(allQRBookmarks);
-
         if(allQRBookmarks) {
+
+          /*allQRBookmarks.sort(function(a,b) {
+            return a.ID*100+a.step - b.ID*100+b.step;
+          });*/
+
+          if(ruleid == "7742") {
+            console.log(allQRBookmarks);
+          }
 
           allQRBookmarks.forEach((qrBookmark, j) => {
 
+            var step = qrBookmark["step"];
+            var stepID = qrBookmark["ID"];
             var bookmark = qrBookmark["bookmark"];
             var allCodes = qrBookmark["codes"];
+
+            if(stepID) {
+              if(isHTML) {
+
+              doc.write("<p><b>Flow Path - Step <span>"+(1+step)+"</span></b>");
+              }
+              else {
+                doc.text("Flow Path - Step"+(1+step));
+              }
+            }
+            else {
+              if(isHTML) {
+
+              doc.write("<p>");
+              }
+            }
 
             if(bookmark && allCodes) {
 
               if(isHTML) {
-              doc.write("<p>");
+
               doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
+
               doc.write("</p><div class='codetable'>");
 
               allCodes.forEach((thecode, i) => {
