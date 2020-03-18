@@ -104,6 +104,7 @@ let allScannedFiles = [];
 
 let closedInterfaces = 0;
 let allBookmarksByRuleId = {};
+let dataflowRuleId = {}; // rule ID -> [internal ID]
 
 const resultsWithPath = path.join(input+"/resultWithPath")
 files = fs.readdirSync(resultsWithPath);
@@ -114,7 +115,7 @@ files.forEach(function(file) {
 
     try {
 
-      console.log("resultWithPath start parsing "+file);
+      //console.log("resultWithPath start parsing "+file);
 
       let byFileRawdata = fs.readFileSync(path.join(resultsWithPath,file));
       byQRResults = JSON.parse(byFileRawdata);
@@ -128,15 +129,36 @@ files.forEach(function(file) {
 
     if(byQRResults) {
 
-        if(byQRResults["ViolationId"]) {
+      var violationId = byQRResults["ViolationId"]
+      var violationInternalId = byQRResults["ID"]
+
+        if(violationId) {
           var bookmarks = [];
+          var internalIDs = [];
+
+          try {
+            internalIDs = dataflowRuleId[violationId];
+          }
+          catch(error) {
+            console.log("dataflowRuleId no previous table for "+violationId);
+          }
+
+          if(!internalIDs) {
+            internalIDs = [];
+          }
+
+          internalIDs.push(violationInternalId);
+          dataflowRuleId[violationId] = internalIDs;
+
+          //console.log(dataflowRuleId);
 
           var violationbookmarks = byQRResults["bookmarks"];
           //console.log("adding "+violationbookmarks.length+" bookmarks");
 
           violationbookmarks.forEach((violationbookmark, i) => {
 
-              bookmarks.push({"file":violationbookmark["path"],"ID":byQRResults["ID"],"bookmark":violationbookmark,"step":violationbookmark["step"],"codes":[]});
+              bookmarks.push({"file":violationbookmark["path"],"ID":violationInternalId,"bookmark":violationbookmark,"step":violationbookmark["step"],"codes":[]});
+
 
             if(allScannedFiles.indexOf(violationbookmark["path"])==-1) {
 
@@ -148,7 +170,7 @@ files.forEach(function(file) {
           var existingbookmarks = []
 
           try {
-            existingbookmarks = allBookmarksByRuleId[byQRResults["ViolationId"]];
+            existingbookmarks = allBookmarksByRuleId[violationId];
           }
           catch(error) {
 
@@ -159,10 +181,12 @@ files.forEach(function(file) {
             }
           }
 
-          allBookmarksByRuleId[byQRResults["ViolationId"]] = bookmarks;
+          allBookmarksByRuleId[violationId] = bookmarks;
 
-          if(byQRResults["ViolationId"]=="7740") {
-            console.log(allBookmarksByRuleId[byQRResults["ViolationId"]]);
+          if(violationId=="7740") {
+            console.log(allBookmarksByRuleId[violationId]);
+            console.log("------------------------------");
+            console.log(dataflowRuleId[violationId]);
           }
         }
     }
@@ -181,7 +205,7 @@ files.forEach(function(file) {
 
   try {
 
-    console.log("resultByQualityRule start parsing "+file);
+    //console.log("resultByQualityRule start parsing "+file);
 
     let byFileRawdata = fs.readFileSync(path.join(resultsByFilePath,file));
     byQRResults = JSON.parse(byFileRawdata);
@@ -343,9 +367,9 @@ allScannedFiles.forEach((thefile,i) => {
       {
         //console.log(allBookmarksByRuleId);
 
-        console.log("allBookmarks:"+Object.keys(allBookmarksByRuleId).length);
+        //console.log("allBookmarks:"+Object.keys(allBookmarksByRuleId).length);
 
-        console.log(allBookmarksByRuleId['7740']);
+        //console.log(allBookmarksByRuleId['7740']);
 
         // start the document here
 
@@ -362,7 +386,7 @@ allScannedFiles.forEach((thefile,i) => {
             // do nothing
           }
 
-          generateSecurityReport(template.templatetitle,template.templatetags,template.templateheaders,someDescriptions,allBookmarksByRuleId);
+          generateSecurityReport(template.templatetitle,template.templatetags,template.templateheaders,someDescriptions,allBookmarksByRuleId,dataflowRuleId);
         }
         else {
           generateBasicReport();
@@ -391,8 +415,10 @@ tbody tr { \
 code { padding: 8px; font-size: 13px; line-height: 1.4;}\
 .codetable { display: inline-block; width: 100%; background-color: #EEEEEE;} \
 .codetablerow { display: inline-block; width: 100%;} \
-.codetablelineindexcell {  text-align: right;  line-height: 1.4; width: 60px; float: left; font-size: 13px; background-color: #333333; color: white; padding-right: 4px;} \
-.codetablelinecell {  text-align: left; float: left; }\
+.codetablelineindexcell {  text-align: right;  line-height: 1.4; width: 60px; float: left; font-size: 13px; background-color: #333333; color: white; } \
+.codetablelinecell {  text-align: left; float: left; } \
+.stepnumber { padding: 0px; margin: 4px; display: inline-block; border-radius: 12px; border-color: black; background-color: #BBB; min-width: 24px; height: 24px; text-align: center; } \
+.flowpath { padding: 8px; background-color: #EEE; border-radius: 8px; } \
 }";
 
 const fonts = {
@@ -424,7 +450,7 @@ const h4 = { fontSize: 12, font: fonts.HelveticaBold };
 const paragraphFormat = {fontSize: 11, color: "#AAAAAA"};
 
 
-function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions, allBookmarksByRuleId) {
+function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions, allBookmarksByRuleId,dataflowRuleId) {
 
   const isHTML = (format == 'HTML');
 
@@ -625,13 +651,32 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
       currentRuleIdsWithViolations.forEach((ruleid, i) => {
 
         var alreadyPrinted = 0;
+        var violationIds = dataflowRuleId[ruleid];
 
 
         if(isHTML) {
-          doc.write("<p><b>"+ruleid+" - Details</b></p>");
+
+          if(violationIds) {
+            doc.write("<p><b>"+ruleid+" - "+violationIds.length+" findings with Data Flow</b></p>");
+          }
+          else {
+            doc.write("<p><b>"+ruleid+" - Bookmarks</b></p>");
+          }
         }
         else {
           doc.cell(paddingOptions).text(ruleid+" - Details",h4);
+        }
+
+        if(ruleid == "7742") {
+          console.log(violationIds);
+        }
+
+        if(violationIds) {
+
+          if(isHTML) {
+            doc.write("");
+          }
+
         }
 
         var allQRBookmarks = allBookmarksByRuleId[ruleid];
@@ -642,9 +687,13 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
             return a.ID*100+a.step - b.ID*100+b.step;
           });*/
 
+
           if(ruleid == "7742") {
-            console.log(allQRBookmarks);
+            //console.log(allQRBookmarks);
+            console.log(violationIds);
           }
+
+          var currentStepID = -1
 
           allQRBookmarks.forEach((qrBookmark, j) => {
 
@@ -656,7 +705,11 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
             if(stepID) {
               if(isHTML) {
 
-              doc.write("<p><b>Flow Path - Step <span>"+(1+step)+"</span></b>");
+                if(stepID!=currentStepID) {
+                  doc.write("<div class='flowpath'><p><b>Finding #"+(1+violationIds.indexOf(stepID))+"</b></p>");
+                }
+
+                doc.write("<p><span class='stepnumber'>"+(1+step)+"</span>");
               }
               else {
                 doc.text("Flow Path - Step"+(1+step));
@@ -664,8 +717,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
             }
             else {
               if(isHTML) {
-
-              doc.write("<p>");
+                doc.write("<p>");
               }
             }
 
@@ -673,11 +725,11 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
               if(isHTML) {
 
-              doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
+                doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
 
-              doc.write("</p><div class='codetable'>");
+                doc.write("</p><div class='codetable'>");
 
-              allCodes.forEach((thecode, i) => {
+                allCodes.forEach((thecode, i) => {
 
                 var thelineindex = thecode[0];
                 var theline = thecode[1];
@@ -709,8 +761,8 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
                 doc.write("<div class='codetablerow'><div class='codetablelineindexcell'>"+thelineindex+"</div><div class='codetablelinecell'><code>"+theline+"</code></div></div>");
               });
 
-              doc.write("</div>");
-            }
+                doc.write("</div>");
+              }
               else {
               doc.text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
 
@@ -750,7 +802,20 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
               });
             }
             }
+
+            if(stepID) {
+              if(isHTML) {
+                if(stepID!=currentStepID) {
+                  currentStepID = stepID;
+                  doc.write("</div>");
+                }
+              }
+            }
           });
+        }
+
+        if(violationIds) {
+          doc.write("</div>");
         }
       });
     }
