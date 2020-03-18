@@ -56,13 +56,15 @@ else {
 
 var template;
 
-try {
-  template = require(/*path.join(*/'./templates/'+report+'.template.js');
-}
-catch(error) {
-  console.log("Cannot load the template from report:"+report);
-  console.error(error);
-  process.exit(1);
+if(report!='') {
+  try {
+    template = require(/*path.join(*/'./templates/'+report+'.template.js');
+  }
+  catch(error) {
+    console.log("Cannot load the template from report:"+report);
+    console.error(error);
+    process.exit(1);
+  }
 }
 
 //console.log(template.templatetitle);
@@ -935,7 +937,7 @@ function generateBasicReport() {
 
       }
     }
-    }
+  }
 }
 
 function addDetails(somedetails) {
