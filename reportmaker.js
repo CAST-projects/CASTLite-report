@@ -184,12 +184,6 @@ files.forEach(function(file) {
           }
 
           allBookmarksByRuleId[violationId] = bookmarks;
-
-          if(violationId=="7740") {
-            console.log(allBookmarksByRuleId[violationId]);
-            console.log("------------------------------");
-            console.log(dataflowRuleId[violationId]);
-          }
         }
     }
 });
@@ -414,13 +408,14 @@ tbody tr { \
     line-height: 1.2; \
     font-weight: unset; \
 }\
-code { padding: 8px; font-size: 13px; line-height: 1.4;}\
-.codetable { display: inline-block; width: 100%; background-color: #EEEEEE;} \
-.codetablerow { display: inline-block; width: 100%;} \
-.codetablelineindexcell {  text-align: right;  line-height: 1.4; width: 60px; float: left; font-size: 13px; background-color: #333333; color: white; } \
-.codetablelinecell {  text-align: left; float: left; } \
-.stepnumber { padding: 0px; margin: 4px; display: inline-block; border-radius: 12px; border-color: black; background-color: #BBB; min-width: 24px; height: 24px; text-align: center; } \
-.flowpath { padding: 8px; background-color: #EEE; border-radius: 8px; } \
+code { padding: 8px; font-size: 13px; line-height: 1.6;}\
+.codetable { display: inline-block; width: 100%;} \
+.codetablerow { display: inline-block; width: 100%; line-height: 1.6; } \
+.codetablelineindexcell {  text-align: right; width: 60px; float: left; font-size: 13px; background-color: #333333; color: #BBB; padding-right: 4px; } \
+.codetablelinecell {  text-align: left; float: left; background-color: #333333; color: white; } \
+.codetablelinepathcell { text-align: center; color: #BBB; float: left; width: 24px; margin-left:4px; margin-right:4px;} \
+.stepnumber { padding: 0px; margin: 4px; display: inline-block; border-radius: 50%; border-color: black; background-color: #BBB; min-width: 24px; line-height: 24px; text-align: center; } \
+.flowpath { padding-left: 8px; padding-top:2px; margin-bottom: 8px; background-color: #EEE; border-radius: 8px; } \
 }";
 
 const fonts = {
@@ -441,15 +436,18 @@ const fonts = {
 }
 
 const paddingOptions = { paddingBottom: 0.5*pdf.cm, paddingTop: 0.5*pdf.cm };
+const paddingCodeOptions = { paddingBottom: 0.1*pdf.cm, paddingTop: 0.1*pdf.cm, backgroundColor: 0x000000 };
 const paddingBottomOptions = { paddingBottom: 0.5*pdf.cm };
-const codeOptions = {font: fonts.Courier };
-const bookmarkOptions = { color: 0xCC0000 };
+const codeOptions = {font: fonts.Courier, color: 0xFFFFFF  };
+const bookmarkOptions = { paddingLeft: 0.4*pdf.com ,color: 0xFA825C };
+const stepOptions = { font: fonts.HelveticaOblique, paddingBottom: 0.5*pdf.cm };
 
-const h1 = { fontSize: 18, font: fonts.HelveticaBold };
-const h2 = { fontSize: 16, font: fonts.HelveticaBold };
-const h3 = { fontSize: 14, font: fonts.HelveticaBold };
-const h4 = { fontSize: 12, font: fonts.HelveticaBold };
+const h1 = { fontSize: 24, font: fonts.HelveticaBold };
+const h2 = { fontSize: 18, font: fonts.HelveticaBold };
+const h3 = { fontSize: 16, font: fonts.HelveticaBold };
+const h4 = { fontSize: 14, font: fonts.HelveticaBold };
 const paragraphFormat = {fontSize: 11, color: "#AAAAAA"};
+const boldFormat = {fontSize: 11, font: fonts.HelveticaBold};
 
 
 function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions, allBookmarksByRuleId,dataflowRuleId) {
@@ -659,41 +657,24 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
         if(isHTML) {
 
           if(violationIds) {
-            doc.write("<p><b>"+ruleid+" - "+violationIds.length+" findings with Data Flow</b></p>");
+            doc.write("<p><b>"+ruleid+" - "+violationIds.length+" findings flows</b></p>");
           }
           else {
-            doc.write("<p><b>"+ruleid+" - Bookmarks</b></p>");
+            doc.write("<p><b>"+ruleid+" - findings bookmarks</b></p>");
           }
         }
         else {
-          doc.cell(paddingOptions).text(ruleid+" - Details",h4);
-        }
-
-        if(ruleid == "7742") {
-          console.log(violationIds);
-        }
-
-        if(violationIds) {
-
-          if(isHTML) {
-            doc.write("");
+          if(violationIds) {
+            doc.cell(paddingOptions).text(ruleid+" - "+violationIds.length+" findings flows");
           }
-
+          else {
+            doc.cell(paddingOptions).text(ruleid+" - findings bookmarks");
+          }
         }
 
         var allQRBookmarks = allBookmarksByRuleId[ruleid];
 
         if(allQRBookmarks) {
-
-          /*allQRBookmarks.sort(function(a,b) {
-            return a.ID*100+a.step - b.ID*100+b.step;
-          });*/
-
-
-          if(ruleid == "7742") {
-            //console.log(allQRBookmarks);
-            console.log(violationIds);
-          }
 
           var currentStepID = -1
 
@@ -708,19 +689,34 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
               if(isHTML) {
 
                 if(stepID!=currentStepID) {
-                  doc.write("<div class='flowpath'><p><b>Finding #"+(1+violationIds.indexOf(stepID))+"</b></p>");
+
+                  if(currentStepID!=-1) {
+                    doc.write("</div></div>"); // from previous block created.
+                  }
+
+                  currentStepID = stepID;
+                  doc.write("<div class='flowpath'><p><b>Finding #"+(1+violationIds.indexOf(stepID))+"</b></p><div class='codetable'>");
                 }
 
-                doc.write("<p><span class='stepnumber'>"+(1+step)+"</span>");
+                doc.write("<div class='stepbookmark'><div class='stepnumber'>"+(1+step)+"</div>");
               }
               else {
-                doc.text("Flow Path - Step"+(1+step));
+                if(stepID!=currentStepID) {
+                  currentStepID = stepID;
+                  doc.cell(Object.assign({},boldFormat,paddingBottomOptions)).text("Finding #"+(1+violationIds.indexOf(stepID)));
+                }
               }
             }
             else {
+
               if(isHTML) {
+                if(currentStepID!=-1) {
+                  doc.write("</div></div>"); // from previous block created.
+                }
                 doc.write("<p>");
               }
+
+              currentStepID = -1;
             }
 
             if(bookmark && allCodes) {
@@ -729,7 +725,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
                 doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
 
-                doc.write("</p><div class='codetable'>");
+                //doc.write("<div class='codetable'>");
 
                 allCodes.forEach((thecode, i) => {
 
@@ -760,13 +756,26 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
                 theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
                 theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');
 
-                doc.write("<div class='codetablerow'><div class='codetablelineindexcell'>"+thelineindex+"</div><div class='codetablelinecell'><code>"+theline+"</code></div></div>");
+                doc.write("<div class='codetablerow'>");
+                if(stepID) {
+                  doc.write("<div class='codetablelinepathcell'>|</div>");
+                }
+                doc.write("<div class='codetablelineindexcell'>"+thelineindex+"</div>");
+                doc.write("<div class='codetablelinecell'><code>"+theline+"</code></div>");
+                doc.write("</div>");
               });
 
-                doc.write("</div>");
+            doc.write("</div>");
+            }
+            else {
+
+              if(stepID) {
+                doc.text("Step #"+(1+step)+" > ",stepOptions).append(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")");
+
               }
               else {
-              doc.text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
+                doc.text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
+              }
 
               allCodes.forEach((thecode, i) => {
 
@@ -781,13 +790,13 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
                 if((i==0) && (i==(allCodes.length-1))) {
 
-                  doc.cell(paddingOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
+                  doc.cell(paddingCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
                 }
                 else if(i==0) {
-                  doc.cell(paddingOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
+                  doc.cell(paddingCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
                 }
                 else if(i==(allCodes.length-1)) {
-                  doc.cell(paddingOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
+                  doc.cell(paddingCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
                 }
 
                 //console.log("BEFORE:"+theline);
@@ -805,19 +814,14 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
             }
             }
 
-            if(stepID) {
-              if(isHTML) {
-                if(stepID!=currentStepID) {
-                  currentStepID = stepID;
-                  doc.write("</div>");
-                }
-              }
-            }
           });
-        }
 
-        if(violationIds) {
-          doc.write("</div>");
+          if(isHTML) {
+
+            if(currentStepID!=-1) {
+              doc.write("</div></div>");
+            }
+          }
         }
       });
     }
