@@ -11,6 +11,8 @@ var output = '';
 var report = '';
 var format = 'PDF';
 
+const version = "1.0.1";
+
 var doc;
 
 if ( myArgs.length > 0) {
@@ -71,7 +73,7 @@ if(report!='') {
 
 function displayhelp() {
 
-  console.log("CARL Report Maker Help");
+  console.log("CARL Report Maker Help ("+version+")");
   console.log("--input: path to the folder where to find the CARL output");
   console.log("--output: path where the report will be saved");
   console.log("--report: OWASP2017|OWASP2013|CWETop252011|CWETop252019|OWASPMobile2016 (CAST Health Factors if empty)");
@@ -90,7 +92,8 @@ let applicationSummary;
 try {
   applicationSummary = JSON.parse(rawdata);
 
-  console.log(applicationSummary["Application Name"]+' report to be started...');
+  console.log("CARL Report Maker ("+version+") initialized!")
+  console.log("Starting "+applicationSummary["Application Name"]+' report...');
 }
 catch(error) {
   console.error(error);
@@ -270,7 +273,8 @@ files.forEach(function(file) {
   }
 });
 
-console.log("let scan the files to get the bookmarks from "+allScannedFiles.length+" file(s)");
+console.log("Results have been processed...")
+console.log("Let scan the "+allScannedFiles.length+" source code files to get the bookmarks");
 
 allScannedFiles.forEach((thefile,i) => {
 
@@ -436,11 +440,13 @@ const fonts = {
 }
 
 const paddingOptions = { paddingBottom: 0.5*pdf.cm, paddingTop: 0.5*pdf.cm };
-const paddingCodeOptions = { paddingBottom: 0.1*pdf.cm, paddingTop: 0.1*pdf.cm, backgroundColor: 0x000000 };
+const overallCodeOptions = { backgroundColor: 0x000000 };
 const paddingBottomOptions = { paddingBottom: 0.5*pdf.cm };
+const paddingTopOptions = { paddingTop: 0.3*pdf.cm };
 const codeOptions = {font: fonts.Courier, color: 0xFFFFFF  };
-const bookmarkOptions = { paddingLeft: 0.4*pdf.com ,color: 0xFA825C };
-const stepOptions = { font: fonts.HelveticaOblique, paddingBottom: 0.5*pdf.cm };
+const bookmarkOptions = { color: 0xFACD5C };
+const bookmarkPaddingOptions = { paddingLeft: 0.4*pdf.com };
+const stepOptions = { font: fonts.HelveticaBold, paddingBottom: 0.5*pdf.cm };
 
 const h1 = { fontSize: 24, font: fonts.HelveticaBold };
 const h2 = { fontSize: 18, font: fonts.HelveticaBold };
@@ -448,9 +454,12 @@ const h3 = { fontSize: 16, font: fonts.HelveticaBold };
 const h4 = { fontSize: 14, font: fonts.HelveticaBold };
 const paragraphFormat = {fontSize: 11, color: "#AAAAAA"};
 const boldFormat = {fontSize: 11, font: fonts.HelveticaBold};
+const regularFormat = {fontSize: 11, font: fonts.Helvetica};
 
 
 function generateSecurityReport(reporttitle, categoriesObjects, headers, descriptions, allBookmarksByRuleId,dataflowRuleId) {
+
+  console.log("==== Security Report "+report+" ====");
 
   const isHTML = (format == 'HTML');
 
@@ -657,18 +666,18 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
         if(isHTML) {
 
           if(violationIds) {
-            doc.write("<p><b>"+ruleid+" - "+violationIds.length+" findings flows</b></p>");
+            doc.write("<p><b>"+ruleid+" - "+violationIds.length+" Findings Flows</b></p>");
           }
           else {
-            doc.write("<p><b>"+ruleid+" - findings bookmarks</b></p>");
+            doc.write("<p><b>"+ruleid+" - Findings Bookmarks</b></p>");
           }
         }
         else {
           if(violationIds) {
-            doc.cell(paddingOptions).text(ruleid+" - "+violationIds.length+" findings flows");
+            doc.cell(Object.assign({},boldFormat,paddingOptions)).text(ruleid+" - "+violationIds.length+" Findings Flows");
           }
           else {
-            doc.cell(paddingOptions).text(ruleid+" - findings bookmarks");
+            doc.cell(Object.assign({},boldFormat,paddingOptions)).text(ruleid+" - Findings Bookmarks");
           }
         }
 
@@ -703,7 +712,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
               else {
                 if(stepID!=currentStepID) {
                   currentStepID = stepID;
-                  doc.cell(Object.assign({},boldFormat,paddingBottomOptions)).text("Finding #"+(1+violationIds.indexOf(stepID)));
+                  doc.cell(Object.assign({},boldFormat,paddingOptions)).text("Finding #"+(1+violationIds.indexOf(stepID)));
                 }
               }
             }
@@ -770,11 +779,11 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
             else {
 
               if(stepID) {
-                doc.text("Step #"+(1+step)+" > ",stepOptions).append(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")");
+                doc.cell(paddingTopOptions).text("Step #"+(1+step)+" > ",stepOptions).append(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",regularFormat);
 
               }
               else {
-                doc.text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
+                doc.cell(paddingTopOptions).text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
               }
 
               allCodes.forEach((thecode, i) => {
@@ -790,26 +799,22 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
                 if((i==0) && (i==(allCodes.length-1))) {
 
-                  doc.cell(paddingCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
+                  var bookmarkfirstpart = theline.substring(0,colStart);
+                  var lastchar = bookmarkfirstpart.charAt(bookmarkfirstpart.length-1)
+                  var completeChar = "";
+
+                  if(lastchar!="(") {
+                    completeChar = " ";
+                  }
+
+                  doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(bookmarkfirstpart).append(completeChar+theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
                 }
                 else if(i==0) {
-                  doc.cell(paddingCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
+                  doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
                 }
                 else if(i==(allCodes.length-1)) {
-                  doc.cell(paddingCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
+                  doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
                 }
-
-                //console.log("BEFORE:"+theline);
-
-                /*theline = theline.replace(new RegExp('\t','g'),'    ');
-                theline = theline.replace(new RegExp('<','g'),'&lt;');
-                theline = theline.replace(new RegExp('>','g'),'&gt;');
-                theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
-                theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');*/
-
-                //console.log("AFTER:"+theline);
-
-                //doc.text(thelineindex+":"+theline);
               });
             }
             }
@@ -829,6 +834,8 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 }
 
 function generateBasicReport() {
+
+  console.log("==== Basic Report "+report+" ====");
 
   const isHTML = (format == 'HTML');
 
@@ -1027,6 +1034,9 @@ function setupDocument() {
     cell.text("Analysis date: "+applicationSummary["Analysis date"])
     cell.text("Number of Files: "+applicationSummary["Total count of Files"])
     cell.text("Number of Rules: "+applicationSummary["Total number of rules"])
+
+    doc.cell(paddingOptions).text('Report generated by CARL Report ('+version+')');
+
   }
   else {
     console.log('Report Maker create HTML document...');
@@ -1046,12 +1056,14 @@ function setupDocument() {
     doc.write("<ul><li>Analysis date:&nbsp;"+applicationSummary["Analysis date"]+"</li>");
     doc.write("<li>Number of Files:&nbsp;"+applicationSummary["Total count of Files"]+"</li>");
     doc.write("<li>Number of Rules:&nbsp;"+applicationSummary["Total number of rules"]+"</li></ul>");
+
+    doc.write('<p><i>Report generated by CARL Report ('+version+')</i></p>');
   }
 }
 
 function finalizeDocument() {
 
-  console.log('Document saved!');
+  console.log('Document to be saved!');
 
   if(report == 'HTML') {
       doc.write("</body></html>");
