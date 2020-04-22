@@ -11,7 +11,7 @@ var output = '';
 var report = '';
 var format = 'PDF';
 
-const version = "1.0.1";
+const version = "1.1.0";
 
 var doc;
 
@@ -111,6 +111,7 @@ let closedInterfaces = 0;
 let allBookmarksByRuleId = {};
 let dataflowRuleId = {}; // rule ID -> [internal ID]
 
+// save bookmark from rule using path (dataflow) technics
 const resultsWithPath = path.join(input+"/resultWithPath")
 files = fs.readdirSync(resultsWithPath);
 
@@ -191,6 +192,7 @@ files.forEach(function(file) {
     }
 });
 
+// save bookmark from rule using other technics
 const resultsByFilePath = path.join(input+"/resultByQualityRule")
 files = fs.readdirSync(resultsByFilePath);
 
@@ -276,6 +278,7 @@ files.forEach(function(file) {
 console.log("Results have been processed...")
 console.log("Let scan the "+allScannedFiles.length+" source code files to get the bookmarks");
 
+// get the snippets of code for each bookmark found
 allScannedFiles.forEach((thefile,i) => {
 
     //process.exit(1);
@@ -363,6 +366,7 @@ allScannedFiles.forEach((thefile,i) => {
 
       closedInterfaces = closedInterfaces+1;
 
+      // last file has been parsed and snippet of code has been copied, we can now generate the report
       if(readInterfaces.length == closedInterfaces)
       {
         //console.log(allBookmarksByRuleId);
@@ -389,7 +393,7 @@ allScannedFiles.forEach((thefile,i) => {
           generateSecurityReport(template.templatetitle,template.templatetags,template.templateheaders,someDescriptions,allBookmarksByRuleId,dataflowRuleId);
         }
         else {
-          generateBasicReport();
+          generateBasicReport(allBookmarksByRuleId,dataflowRuleId);
         }
 
         finalizeDocument();
@@ -465,6 +469,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
   var resultTags = applicationSummary["Classify by tag"];
 
+  // 1 - prepare the main and basic information
   if(isHTML) {
     doc.write('<h3>CAST Security Report</h3>');
     doc.write('<h4>'+reporttitle+'</h4>');
@@ -493,16 +498,12 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
 
     var tr = table.header({ font: fonts.HelveticaBold, fontSize: 9, borderBottomWidth: 1.5 })
 
-    //tr.cell('Category Name')
     headers.forEach((item, i) => {
-      //console.log(item);
       tr.cell(item);
     });
-    //tr.cell('# Violations', { textAlign: 'right' })
   }
 
-  // prepare key-value mapping by reviewing all categories
-
+  // prepare data with key-value mapping by reviewing all categories
   for(k = 0; k < resultTags.length; k++)
   {
       var tagName = resultTags[k]["Tag Name"];
@@ -516,7 +517,8 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
       }
   }
 
-  // overall table view of violations per security category
+  // 2 - build the overall table view of violations per security category
+  // this section can include predefined column coming from the template
   Object.keys(categoriesObjects).forEach(k => {
 
     var customs;
@@ -597,7 +599,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
   }
 
 
-  // display details per security category
+  // 3 - Display details per security category
   Object.keys(categoriesObjects).forEach(k => {
 
     currentRuleIdsWithViolations = [];
@@ -610,6 +612,7 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
       doc.cell(paddingOptions).text(categoriesObjects[k].name,h4);
     }
 
+    // description of category
     if(descriptions)
     {
       if(isHTML) {
@@ -681,167 +684,23 @@ function generateSecurityReport(reporttitle, categoriesObjects, headers, descrip
           }
         }
 
+        // each rule has several bookmarks
         var allQRBookmarks = allBookmarksByRuleId[ruleid];
 
-        if(allQRBookmarks) {
+        generateBookmarksOutput(allQRBookmarks,violationIds);
 
-          var currentStepID = -1
-
-          allQRBookmarks.forEach((qrBookmark, j) => {
-
-            var step = qrBookmark["step"];
-            var stepID = qrBookmark["ID"];
-            var bookmark = qrBookmark["bookmark"];
-            var allCodes = qrBookmark["codes"];
-
-            if(stepID) {
-              if(isHTML) {
-
-                if(stepID!=currentStepID) {
-
-                  if(currentStepID!=-1) {
-                    doc.write("</div></div>"); // from previous block created.
-                  }
-
-                  currentStepID = stepID;
-                  doc.write("<div class='flowpath'><p><b>Finding #"+(1+violationIds.indexOf(stepID))+"</b></p><div class='codetable'>");
-                }
-
-                doc.write("<div class='stepbookmark'><div class='stepnumber'>"+(1+step)+"</div>");
-              }
-              else {
-                if(stepID!=currentStepID) {
-                  currentStepID = stepID;
-                  doc.cell(Object.assign({},boldFormat,paddingOptions)).text("Finding #"+(1+violationIds.indexOf(stepID)));
-                }
-              }
-            }
-            else {
-
-              if(isHTML) {
-                if(currentStepID!=-1) {
-                  doc.write("</div></div>"); // from previous block created.
-                }
-                doc.write("<p>");
-              }
-
-              currentStepID = -1;
-            }
-
-            if(bookmark && allCodes) {
-
-              if(isHTML) {
-
-                doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
-
-                //doc.write("<div class='codetable'>");
-
-                allCodes.forEach((thecode, i) => {
-
-                var thelineindex = thecode[0];
-                var theline = thecode[1];
-
-                if(i==0) {
-                  const colStart = parseInt(bookmark["colStart"]);
-                  theline = theline.substring(0,colStart)+"!MARK!"+theline.substring(colStart);
-                }
-                else {
-                  theline = "!MARK!"+theline;
-                }
-
-                if(i==(allCodes.length-1)) {
-                  const colEnd = parseInt(bookmark["colEnd"]);
-                  theline = theline.substring(0,6*(i==0)+colEnd)+"!/MARK!"+theline.substring(6*(i==0)+colEnd);
-                }
-                else {
-                  theline = theline+"!/MARK!";
-                }
-
-                //console.log("BEFORE:"+theline);
-
-                theline = theline.replace(new RegExp('\t','g'),'&nbsp;');
-                theline = theline.replace(new RegExp('<','g'),'&lt;');
-                theline = theline.replace(new RegExp('>','g'),'&gt;');
-                theline = theline.replace(new RegExp('!MARK!','g'),'<mark>');
-                theline = theline.replace(new RegExp('!/MARK!','g'),'</mark>');
-
-                doc.write("<div class='codetablerow'>");
-                if(stepID) {
-                  doc.write("<div class='codetablelinepathcell'>|</div>");
-                }
-                doc.write("<div class='codetablelineindexcell'>"+thelineindex+"</div>");
-                doc.write("<div class='codetablelinecell'><code>"+theline+"</code></div>");
-                doc.write("</div>");
-              });
-
-            doc.write("</div>");
-            }
-            else {
-
-              if(stepID) {
-                doc.cell(paddingTopOptions).text("Step #"+(1+step)+" > ",stepOptions).append(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",regularFormat);
-
-              }
-              else {
-                doc.cell(paddingTopOptions).text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
-              }
-
-              allCodes.forEach((thecode, i) => {
-
-                var thelineindex = thecode[0];
-                var theline = thecode[1];
-                const colStart = parseInt(bookmark["colStart"]);
-                const colEnd = parseInt(bookmark["colEnd"]);
-
-                // comparison with prebuilt line
-                //doc.cell(paddingOptions).text(thelineindex+":"+theline,codeOptions);
-
-
-                if((i==0) && (i==(allCodes.length-1))) {
-
-                  var bookmarkfirstpart = theline.substring(0,colStart);
-                  var lastchar = bookmarkfirstpart.charAt(bookmarkfirstpart.length-1)
-                  var completeChar = "";
-
-                  if(lastchar!="(") {
-                    completeChar = " ";
-                  }
-
-                  doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(bookmarkfirstpart).append(completeChar+theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
-                }
-                else if(i==0) {
-                  doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
-                }
-                else if(i==(allCodes.length-1)) {
-                  doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
-                }
-              });
-            }
-            }
-
-          });
-
-          if(isHTML) {
-
-            if(currentStepID!=-1) {
-              doc.write("</div></div>");
-            }
-          }
-        }
       });
     }
   });
 }
 
-function generateBasicReport() {
+function generateBasicReport(allBookmarksByRuleId,dataflowRuleId) {
 
   console.log("==== Basic Report "+report+" ====");
 
   const isHTML = (format == 'HTML');
-
-  //var header = doc.header().table({ widths: [null, null], paddingBottom: 1*pdf.cm }).row()
-  //header.cell().text({ textAlign: 'left' }).add('Quality Report')
-
+    
+  // 1 - prepare the main and basic information
   if(isHTML) {
 
       doc.write('<h3>Quality Report</h3>');
@@ -868,7 +727,7 @@ function generateBasicReport() {
   if(isHTML) {
 
   doc.write('<table><tr><th>ID</th><th>Category</th><th align="right"># Violations</th></tr>')
-}
+  }
   else {
 
   var table = doc.table({
@@ -881,8 +740,9 @@ function generateBasicReport() {
     tr.cell('ID')
     tr.cell('Category')
     tr.cell('# Violations', { textAlign: 'right' })
-}
+  }
 
+  // 2 - include all the number of violations per health factors
   for(j=0; j<categoriesOutput.length; j++) {
 
       //console.log("category="+categoriesOutput[j]["category"]+" with "+categoriesOutput[j]["totalViolations"]+" violations");
@@ -903,7 +763,8 @@ function generateBasicReport() {
   if(isHTML) {
     doc.write('</table>');
   }
-
+    
+  // 3 - Display details per security
   for(j=0; j<categoriesOutput.length; j++) {
 
     var listOfRulesArray = categoriesOutput[j]["listOfRules"];
@@ -948,7 +809,202 @@ function generateBasicReport() {
 
       }
     }
+      
+    for(k=0; k<listOfRulesArray.length; k++)
+    {
+        var ruleid = listOfRulesArray[k]["id"];
+        
+        // each rule has several bookmarks
+        var violationIds = dataflowRuleId[ruleid];
+
+         if(isHTML) {
+
+          if(violationIds) {
+            doc.write("<p><b>"+ruleid+" - "+violationIds.length+" Findings Flows</b></p>");
+          }
+          else {
+            doc.write("<p><b>"+ruleid+" - Findings Bookmarks</b></p>");
+          }
+        }
+        else {
+          if(violationIds) {
+            doc.cell(Object.assign({},boldFormat,paddingOptions)).text(ruleid+" - "+violationIds.length+" Findings Flows");
+          }
+          else {
+            doc.cell(Object.assign({},boldFormat,paddingOptions)).text(ruleid+" - Findings Bookmarks");
+          }
+        }
+
+        // print the code snippets for all bookmarks
+        var allQRBookmarks = allBookmarksByRuleId[ruleid];
+
+        generateBookmarksOutput(allQRBookmarks,violationIds);
+    }
   }
+}
+
+/*
+ *  Internal useful functions
+ */
+
+/* Generate code snippets from bookmarks */
+function generateBookmarksOutput(allQRBookmarks,violationIds) {
+    
+    const isHTML = (format == 'HTML');
+    const MARKSTARTPLACEHOLDER = "!MARK!";
+    const MARKENDPLACEHOLDER = "!/MARK!";
+
+    if(allQRBookmarks) {
+
+      var currentStepID = -1
+
+      allQRBookmarks.forEach((qrBookmark, j) => {
+
+        var step = qrBookmark["step"];
+        var stepID = qrBookmark["ID"];
+        var bookmark = qrBookmark["bookmark"];
+        var allCodes = qrBookmark["codes"];
+
+        if(stepID) {
+          if(isHTML) {
+
+            if(stepID!=currentStepID) {
+
+              if(currentStepID!=-1) {
+                doc.write("</div></div>"); // from previous block created.
+              }
+
+              currentStepID = stepID;
+              doc.write("<div class='flowpath'><p><b>Finding #"+(1+violationIds.indexOf(stepID))+"</b></p><div class='codetable'>");
+            }
+
+            doc.write("<div class='stepbookmark'><div class='stepnumber'>"+(1+step)+"</div>");
+          }
+          else {
+            if(stepID!=currentStepID) {
+              currentStepID = stepID;
+              doc.cell(Object.assign({},boldFormat,paddingOptions)).text("Finding #"+(1+violationIds.indexOf(stepID)));
+            }
+          }
+        }
+        else {
+
+          if(isHTML) {
+            if(currentStepID!=-1) {
+              doc.write("</div></div>"); // from previous block created.
+            }
+            doc.write("<p>");
+          }
+
+          currentStepID = -1;
+        }
+
+        if(bookmark && allCodes) {
+
+          if(isHTML) {
+
+            doc.write(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+"&nbsp;("+bookmark["colStart"]+") and ends at line:&nbsp;"+bookmark["lineEnd"]+"&nbsp;("+bookmark["colEnd"]+")");
+
+            //doc.write("<div class='codetable'>");
+
+            allCodes.forEach((thecode, i) => {
+
+                var thelineindex = thecode[0];
+                var theline = thecode[1];
+
+                const colStart = parseInt(bookmark["colStart"]);
+                const colEnd = parseInt(bookmark["colEnd"]);
+
+                
+            if((i==0) && i==(allCodes.length-1)) {
+                theline = theline.substring(0,colStart)+MARKSTARTPLACEHOLDER+theline.substring(colStart,colEnd)+MARKENDPLACEHOLDER+theline.substring(colEnd);
+            }
+            else if(i==0) {
+              theline = theline.substring(0,colStart)+MARKSTARTPLACEHOLDER+theline.substring(colStart)+MARKENDPLACEHOLDER;
+            }
+            else if(i==(allCodes.length-1)) {
+              theline = MARKSTARTPLACEHOLDER+theline.substring(0,colEnd)+MARKENDPLACEHOLDER+theline.substring(colEnd);
+            }
+            else {
+                theline = MARKSTARTPLACEHOLDER+theline+MARKENDPLACEHOLDER;
+            }
+
+            //console.log("BEFORE:"+theline);
+
+            theline = theline.replace(new RegExp('&','g'),'&amp;');
+            theline = theline.replace(new RegExp('\t','g'),'&nbsp;');
+            theline = theline.replace(new RegExp('<','g'),'&lt;');
+            theline = theline.replace(new RegExp('>','g'),'&gt;');
+            theline = theline.replace(new RegExp(MARKSTARTPLACEHOLDER,'g'),'<mark>');
+            theline = theline.replace(new RegExp(MARKENDPLACEHOLDER,'g'),'</mark>');
+
+            doc.write("<div class='codetablerow'>");
+            if(stepID) {
+              doc.write("<div class='codetablelinepathcell'>|</div>");
+            }
+            doc.write("<div class='codetablelineindexcell'>"+thelineindex+"</div>");
+            doc.write("<div class='codetablelinecell'><code>"+theline+"</code></div>");
+            doc.write("</div>");
+          });
+
+        doc.write("</div>");
+        }
+        else {
+
+          if(stepID) {
+            doc.cell(paddingTopOptions).text("Step #"+(1+step)+" > ",stepOptions).append(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",regularFormat);
+
+          }
+          else {
+            doc.cell(paddingTopOptions).text(qrBookmark["file"]+" starts at line: "+bookmark["lineStart"]+" ("+bookmark["colStart"]+") and ends at line: "+bookmark["lineEnd"]+" ("+bookmark["colEnd"]+")",paddingOptions);
+          }
+
+          // foreach bookmark we must have some pieces of code to display
+          allCodes.forEach((thecode, i) => {
+
+            var thelineindex = thecode[0];
+            var theline = thecode[1];
+            const colStart = parseInt(bookmark["colStart"]);
+            const colEnd = parseInt(bookmark["colEnd"]);
+
+            // comparison with prebuilt line
+            //doc.cell(paddingOptions).text(thelineindex+":"+theline,codeOptions);
+
+
+            if((i==0) && (i==(allCodes.length-1))) {
+
+              var bookmarkfirstpart = theline.substring(0,colStart);
+              var lastchar = bookmarkfirstpart.charAt(bookmarkfirstpart.length-1)
+              var completeChar = "";
+
+              if(lastchar!="(") {
+                completeChar = " ";
+              }
+
+              doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(bookmarkfirstpart).append(completeChar+theline.substring(colStart,colEnd), bookmarkOptions).append(theline.substring(colEnd));
+            }
+            else if(i==0) {
+                doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colStart)).append(theline.substring(colStart),bookmarkOptions);
+            }
+            else if(i==(allCodes.length-1)) {
+              doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline.substring(0,colEnd),bookmarkOptions).append(theline.substring(colEnd));
+            }
+            else {
+                doc.cell(overallCodeOptions).text(codeOptions).append(thelineindex+":").append(theline,bookmarkOptions);
+            }
+          });
+        }
+        }
+
+      });
+
+      if(isHTML) {
+
+        if(currentStepID!=-1) {
+          doc.write("</div></div>");
+        }
+      }
+    }
 }
 
 function addDetails(somedetails) {
