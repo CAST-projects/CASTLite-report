@@ -1,6 +1,6 @@
 {
   "name": "CARL-ReportMaker",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "CARL report marker based on CARL JSON output",
   "main": "reportmaker.js",
   "bin": "reportmaker.js",
